@@ -172,7 +172,23 @@ paths:
       responses:
         200:
           description: successful operation
-        400:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  author:
+                    type: string
+                  content:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  likes:
+                    type: integer
+                    minimum: 0
+
+        404:
           description: post not found
 
     delete:
@@ -190,8 +206,42 @@ paths:
 
   /posts/{id}/likes:
     post:
-      tags: ["post"]
+      tags: ["posts"]
       summary: Add Like to Post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+
+    get:
+      tags: ["posts"]
+      summary: Get Likes for a Post
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: usernames
+
+    delete:
+      tags: ["posts"]
+      summary: Remove Like from Post
       parameters:
         - name: id
           in: path

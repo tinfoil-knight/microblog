@@ -2,6 +2,20 @@ openapi: 3.0.0
 info:
   title: Boilerplate Backend
   version: 1.x
+  description: |
+    Standard Success Response:
+    ```
+    {
+      "message": "ok"
+    }
+    ```
+
+    Standard Error Response:
+    ```
+    {
+      "error": <message-here>
+    }
+    ```
 
 servers:
   - url: http://localhost:3030
@@ -44,6 +58,63 @@ paths:
       responses:
         200:
           description: user updated
+
+    delete:
+      tags: ["users"]
+      summary: Delete User
+      responses:
+        200:
+          description: successful operation
+
+  /profile/{id}:
+    get:
+      tags: ["users"]
+      summary: Get User
+      security: []
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  followers:
+                    type: number
+                  following:
+                    type: number
+
+  /profile/{id}/followers:
+    get:
+      tags: ["users"]
+      summary: Get follower list
+      security: []
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /profile/{id}/following:
+    get:
+      tags: ["users"]
+      summary: Get following list
+      security: []
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
 
   /posts:
     post:
@@ -90,7 +161,7 @@ paths:
         200:
           description: successful operation
 
-  /likes/{postId}:
+  /posts/{id}/likes:
     post:
       tags: ["post"]
       summary: Add Like to Post

@@ -28,6 +28,12 @@ const errorHandler = (err, _req, res, _next) => {
 	if (err.name === 'ValidationError') {
 		err.status = 400
 	}
+	if (
+		err.name === 'MongoServerError' &&
+		err.message.includes('duplicate key error')
+	) {
+		err.status = 400
+	}
 	const errStatus = err.status || 500
 	const logMessage = errStatus >= 500 ? err : err.message
 	console.log(logMessage, err.props || '')

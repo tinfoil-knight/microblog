@@ -1,4 +1,4 @@
-const { User } = require('../models')
+const { User, Post, Like } = require('../models')
 
 const HttpError = require('../utils/error')
 const {
@@ -34,7 +34,15 @@ userRouter
 		return res.status(200).json(ok)
 	})
 	.delete(clientAuth, async (req, res) => {
-		await User.deleteOne({ _id: req.id })
+		const userId = req.id
+		const postIds = (
+			await Post.find({ author: userId }).select('_id').lean()
+		).map(x => x._id)
+		await Promise.all([
+			User.deleteOne({ _id: userId }),
+			Like.deleteMany({ $or: [{ user: userId }, { post: { $in: postIds } }] }),
+			Post.deleteMany({ author: userId }),
+		])
 		return res.status(200).json(ok)
 	})
 

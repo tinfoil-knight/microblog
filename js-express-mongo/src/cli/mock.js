@@ -2,7 +2,7 @@
 const faker = require('faker')
 const { connectToDb } = require('../utils/db')
 const { createHash } = require('../utils/auth')
-const { User, Post } = require('../models')
+const { User, Post, Like } = require('../models')
 
 const cleanup = async () => {
 	await User.deleteMany({})
@@ -12,6 +12,10 @@ const cleanup = async () => {
 
 const range = num => {
 	return [...Array(num).keys()]
+}
+
+const randomList = (num, min, max) => {
+	return [...Array(num).keys()].map(_ => getRandomIntInclusive(min, max))
 }
 
 const createUsers = async num => {
@@ -54,11 +58,30 @@ const addPosts = async (min = 5, max = 100) => {
 	console.log('posts added:', posts)
 }
 
+const addLikes = async () => {
+	const posts = await Post.find({}).lean()
+	const users = await User.find({}).lean()
+	const getNLikes = n => {
+		const nums = randomList(n, 0, users.length - 1)
+		return [...new Set(nums)]
+	}
+	await Promise.all(
+		posts.map(post => {
+			const nums = getNLikes(getRandomIntInclusive(0, users.length))
+			const userIds = nums.map(i => users[i]._id)
+			return Like.insertMany(userIds.map(u => ({ user: u, post: post._id })))
+		})
+	)
+	const likes = await Like.countDocuments({})
+	console.log('likes added:', likes)
+}
+
 const main = async () => {
 	await connectToDb(process.env.MONGODB_URI)
 	await cleanup()
 	await createUsers(100)
 	await addPosts()
+	await addLikes()
 	// eslint-disable-next-line no-process-exit
 	process.exit(0)
 }

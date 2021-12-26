@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
 			minLength: 3,
 		},
 		email: { type: String, required: true, unique: true, maxLength: 100 },
-		passwordHash: { type: String, required: true },
+		passwordHash: { type: String, required: true, select: false },
 	},
 	{ timestamps: true }
 )

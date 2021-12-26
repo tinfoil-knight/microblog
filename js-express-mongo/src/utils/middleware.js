@@ -28,11 +28,6 @@ const errorHandler = (err, _req, res, _next) => {
 	if (err.name === 'ValidationError') {
 		err.status = 400
 	}
-	if (isCrmError(err)) {
-		err.status = err.response.status
-		const message = err.response?.data?.errors?.message || err.message
-		err.message = `CRM Error: ${message} on ${err.config.method} ${err.config?.url}`
-	}
 	const errStatus = err.status || 500
 	const logMessage = errStatus >= 500 ? err : err.message
 	console.log(logMessage, err.props || '')
@@ -42,15 +37,6 @@ const errorHandler = (err, _req, res, _next) => {
 		responseObj.details = err.props
 	}
 	res.status(errStatus).json(responseObj)
-}
-
-const isCrmError = err => {
-	if (err.isAxiosError) {
-		if (err.response.request.host === 'verak.myfreshworks.com') {
-			return true
-		}
-	}
-	return false
 }
 
 //

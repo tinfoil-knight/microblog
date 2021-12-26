@@ -66,6 +66,33 @@ paths:
         200:
           description: successful operation
 
+  /users/auth:
+    post:
+      tags: ["users"]
+      summary: Get a login token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
   /profile/{id}:
     get:
       tags: ["users"]

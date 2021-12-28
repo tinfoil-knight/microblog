@@ -1,9 +1,11 @@
 const User = require('./user')
-const Like = require('./like')
 const Post = require('./post')
+const Like = require('./like')
+const Follow = require('./follow')
 
 module.exports = {
 	User,
-	Like,
 	Post,
+	Like,
+	Follow,
 }

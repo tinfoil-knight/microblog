@@ -1,4 +1,4 @@
-const { User, Post, Like } = require('../models')
+const { User, Post, Like, Follow } = require('../models')
 
 const HttpError = require('../utils/error')
 const {
@@ -56,5 +56,54 @@ userRouter.post('/auth', async (req, res) => {
 	const token = await createToken({ id: user._id })
 	return res.status(200).json({ token })
 })
+
+userRouter.get('/:username', async (req, res) => {
+	const username = req.params.username
+	const user = await User.findOne({ username }).select('createdAt').lean()
+	const [followers, following] = await Promise.all([
+		Follow.countDocuments({ following: user._id }),
+		Follow.countDocuments({ follower: user._id }),
+	])
+	res
+		.status(200)
+		.json({ id: user._id, createdAt: user.createdAt, followers, following })
+})
+
+userRouter.get('/:id/followers', async (req, res) => {
+	const userId = req.params.id
+	const followerList = await Follow.find({ following: userId })
+		.populate({ path: 'follower', select: 'username -_id' })
+		.lean()
+	res
+		.status(200)
+		.json({ followers: followerList.map(x => x.follower.username) })
+})
+
+userRouter.get('/:id/following', async (req, res) => {
+	const userId = req.params.id
+	const followingList = await Follow.find({ follower: userId })
+		.populate({ path: 'following', select: 'username -_id' })
+		.lean()
+	res
+		.status(200)
+		.json({ following: followingList.map(x => x.following.username) })
+})
+
+userRouter
+	.route('/follow/:id')
+	.post(clientAuth, async (req, res) => {
+		const follower = req.id
+		const following = req.params.id
+
+		const follow = new Follow({ follower, following })
+		await follow.save()
+		res.status(200).json(ok)
+	})
+	.delete(clientAuth, async (req, res) => {
+		const follower = req.id
+		const following = req.params.id
+		await Follow.deleteOne({ follower, following })
+		res.status(200).json(ok)
+	})
 
 module.exports = userRouter

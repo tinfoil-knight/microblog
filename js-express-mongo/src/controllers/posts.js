@@ -65,10 +65,16 @@ postRouter
 		return res.status(200).json(ok)
 	})
 	.get(async (req, res) => {
+		const limit = 50
+		const page = Math.max(0, req.query?.page || 0)
+		const offset = limit * page
 		const post = req.params.id
 		const likes = await Like.find({ post })
 			.populate({ path: 'user', select: 'username -_id' })
 			.select('user -_id')
+			.limit(limit)
+			.skip(offset)
+			.sort({ createdAt: 'desc' })
 			.lean()
 		const usernames = likes.map(x => x.user.username)
 		return res.status(200).json(usernames)

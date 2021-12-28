@@ -6,11 +6,13 @@ const likeSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			required: true,
 			ref: 'Post',
+			index: true,
 		},
 		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			required: true,
 			ref: 'User',
+			index: true,
 		},
 	},
 	{ timestamps: { createdAt: true, updatedAt: false } }

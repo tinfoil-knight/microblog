@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "src/index.js",
 	"scripts": {
-		"dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./secrets/.env"
+		"dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./secrets/.env",
+		"docs:start": "npx --yes redoc-cli serve ../open-api.yaml --watch"
 	},
 	"keywords": [],
 	"author": "",

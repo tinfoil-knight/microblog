@@ -93,11 +93,17 @@ paths:
                   token:
                     type: string
 
-  /profile/{id}:
+  /users/{username}:
     get:
       tags: ["users"]
       summary: Get User
       security: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -106,18 +112,27 @@ paths:
               schema:
                 type: object
                 properties:
-                  username:
+                  id:
                     type: string
                   followers:
                     type: number
                   following:
                     type: number
+                  createdAt:
+                    type: string
+                    format: date-time
 
-  /profile/{id}/followers:
+  /users/{id}/followers:
     get:
       tags: ["users"]
       summary: Get follower list
       security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -128,11 +143,17 @@ paths:
                 items:
                   type: string
 
-  /profile/{id}/following:
+  /users/{id}/following:
     get:
       tags: ["users"]
       summary: Get following list
       security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: successful operation
@@ -146,6 +167,7 @@ paths:
   /posts:
     post:
       tags: ["posts"]
+      summary: Create Post
       requestBody:
         content:
           application/json:
@@ -228,6 +250,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
       responses:
         200:
           description: successful operation

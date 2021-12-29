@@ -65,19 +65,26 @@ postRouter
 		return res.status(200).json(ok)
 	})
 	.get(async (req, res) => {
-		const limit = 50
-		const page = Math.max(0, req.query?.page || 0)
-		const offset = limit * page
+		const limit = 20
 		const post = req.params.id
-		const likes = await Like.find({ post })
+		const prevId = req.query.cursor
+		const filter = prevId ? { post, _id: { $lt: prevId } } : { post }
+
+		const likes = await Like.find(filter)
 			.populate({ path: 'user', select: 'username -_id' })
-			.select('user -_id')
-			.limit(limit)
-			.skip(offset)
-			.sort({ createdAt: 'desc' })
+			.select('user')
+			.sort({ _id: 'desc' })
+			.limit(limit + 1)
 			.lean()
+		const hasMore = likes.length === limit + 1
+		if (hasMore) {
+			likes.pop()
+		}
+		const lastId = likes.length && hasMore ? likes.at(-1)._id : null
 		const usernames = likes.map(x => x.user.username)
-		return res.status(200).json(usernames)
+		return res
+			.status(200)
+			.json({ data: { usernames }, paging: { cursor: lastId, hasMore } })
 	})
 	.delete(clientAuth, async (req, res) => {
 		const post = req.params.id

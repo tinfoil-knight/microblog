@@ -96,6 +96,10 @@ userRouter
 		const follower = req.id
 		const following = req.params.id
 
+		if (follower === following) {
+			throw new HttpError(400, 'can not follow your own account')
+		}
+
 		const follow = new Follow({ follower, following })
 		await follow.save()
 		res.status(200).json(ok)

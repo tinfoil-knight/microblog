@@ -185,6 +185,7 @@ paths:
               properties:
                 content:
                   type: string
+                  minLength: 1
               required:
                 - content
       responses:
@@ -288,34 +289,35 @@ paths:
 
 components:
   schemas:
-    Post:
+    CommonPost:
       type: object
       properties:
         author:
           type: string
         content:
           type: string
+          minLength: 1
         createdAt:
           type: string
           format: date-time
-        likes:
-          type: integer
-          minimum: 0
+    Post:
+      allOf:
+        - $ref: "#/components/schemas/CommonPost"
+        - type: object
+          properties:
+            likes:
+              type: integer
+              minimum: 0
 
     FeedItem:
-      type: object
-      properties:
-        postId:
-          type: string
-        authorId:
-          type: string
-        content:
-          type: string
-        author:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
+      allOf:
+        - $ref: "#/components/schemas/CommonPost"
+        - type: object
+          properties:
+            postId:
+              type: string
+            authorId:
+              type: string
 
     UserSignup:
       allOf:
@@ -324,6 +326,8 @@ components:
           properties:
             email:
               type: string
+              format: email
+              maxLength: 100
           required:
             - email
 
@@ -332,6 +336,8 @@ components:
       properties:
         username:
           type: string
+          minLength: 3
+          maxLength: 50
         password:
           type: string
           format: password
@@ -346,8 +352,10 @@ components:
           type: string
         followers:
           type: number
+          minimum: 0
         following:
           type: number
+          minimum: 0
         createdAt:
           type: string
           format: date-time
@@ -358,7 +366,9 @@ components:
         cursor:
           oneOf:
             - type: string
+              nullable: true
             - type: integer
+              nullable: true
               minimum: 0
         hasMore:
           type: boolean

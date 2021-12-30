@@ -30,14 +30,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                username:
-                  type: string
-                password:
-                  type: string
+              $ref: "#/components/schemas/UserSignup"
       responses:
         201:
           description: user created
@@ -55,6 +48,8 @@ paths:
               properties:
                 email:
                   type: string
+              required:
+                - email
       responses:
         200:
           description: user updated
@@ -74,13 +69,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-                  format: password
+              $ref: "#/components/schemas/UserLogin"
 
       responses:
         200:
@@ -93,10 +82,40 @@ paths:
                   token:
                     type: string
 
-  /users/{username}:
+  /users/feed:
     get:
       tags: ["users"]
-      summary: Get User
+      summary: Get User Feed
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FeedItem"
+                        maxItems: 50
+                  paging:
+                    $ref: "#/components/schemas/PagingData"
+
+  /users/profile/{username}:
+    get:
+      tags: ["users"]
+      summary: Get User Profile
       security: []
       parameters:
         - name: username
@@ -110,17 +129,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  followers:
-                    type: number
-                  following:
-                    type: number
-                  createdAt:
-                    type: string
-                    format: date-time
+                $ref: "#/components/schemas/UserProfile"
 
   /users/{id}/followers:
     get:
@@ -176,6 +185,8 @@ paths:
               properties:
                 content:
                   type: string
+              required:
+                - content
       responses:
         201:
           description: post created
@@ -197,18 +208,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  author:
-                    type: string
-                  content:
-                    type: string
-                  createdAt:
-                    type: string
-                    format: date-time
-                  likes:
-                    type: integer
-                    minimum: 0
+                $ref: "#/components/schemas/Post"
 
         404:
           description: post not found
@@ -271,12 +271,7 @@ paths:
                         items:
                           type: string
                   paging:
-                    type: object
-                    properties:
-                      cursor:
-                        type: string
-                      hasMore:
-                        type: boolean
+                    $ref: "#/components/schemas/PagingData"
 
     delete:
       tags: ["posts"]
@@ -293,37 +288,80 @@ paths:
 
 components:
   schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-        email:
-          type: string
-        username:
-          type: string
-        followers:
-          type: number
-        following:
-          type: number
-        bookmarks:
-          type: array
-        passwordHash:
-          type: string
-
     Post:
       type: object
       properties:
-        id:
+        author:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        likes:
+          type: integer
+          minimum: 0
+
+    FeedItem:
+      type: object
+      properties:
+        postId:
+          type: string
+        authorId:
           type: string
         content:
           type: string
         author:
           type: string
-        likes:
+        createdAt:
+          type: string
+          format: date-time
+
+    UserSignup:
+      allOf:
+        - $ref: "#/components/schemas/UserLogin"
+        - type: object
+          properties:
+            email:
+              type: string
+          required:
+            - email
+
+    UserLogin:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - username
+        - password
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        followers:
+          type: number
+        following:
           type: number
         createdAt:
           type: string
+          format: date-time
+
+    PagingData:
+      type: object
+      properties:
+        cursor:
+          oneOf:
+            - type: string
+            - type: integer
+              minimum: 0
+        hasMore:
+          type: boolean
 
   securitySchemes:
     bearerAuth:

@@ -126,9 +126,8 @@ userRouter.get('/feed', clientAuth, async (req, res) => {
 	const mappedPosts = posts.map(x => {
 		x.postId = x._id
 		x.authorId = x.author._id
-		x.username = x.author.username
+		x.author = x.author.username
 		delete x._id
-		delete x.author
 		return x
 	})
 

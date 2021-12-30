@@ -137,4 +137,18 @@ userRouter.get('/feed', clientAuth, async (req, res) => {
 	})
 })
 
+userRouter.get('/:id/posts', async (req, res) => {
+	const userId = req.params.id
+	const posts = await Post.find({ author: userId })
+		.select('content createdAt')
+		.sort({ _id: -1 })
+		.lean()
+	const mappedPosts = posts.map(x => {
+		x.id = x._id
+		delete x._id
+		return x
+	})
+	res.status(200).json(mappedPosts)
+})
+
 module.exports = userRouter

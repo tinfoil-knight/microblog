@@ -2,6 +2,7 @@ const { Post, Like } = require('../models')
 
 const HttpError = require('../utils/error')
 const { clientAuth } = require('../utils/auth')
+const { addJob } = require('../utils/queue')
 
 const postRouter = require('express').Router()
 
@@ -12,6 +13,7 @@ postRouter.post('/', clientAuth, async (req, res) => {
 	const author = req.id
 	const post = new Post({ content, author })
 	await post.save()
+	addJob('fanout', { authorId: author, postId: post._id })
 	res.status(201).json(ok)
 })
 

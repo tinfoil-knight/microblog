@@ -7,6 +7,7 @@ const {
 	compareHash,
 	createToken,
 } = require('../utils/auth')
+const redis = require('../utils/redis')
 
 const userRouter = require('express').Router()
 
@@ -57,7 +58,7 @@ userRouter.post('/auth', async (req, res) => {
 	return res.status(200).json({ token })
 })
 
-userRouter.get('/:username', async (req, res) => {
+userRouter.get('/profile/:username', async (req, res) => {
 	const username = req.params.username
 	const user = await User.findOne({ username }).select('createdAt').lean()
 	const [followers, following] = await Promise.all([
@@ -105,5 +106,36 @@ userRouter
 		await Follow.deleteOne({ follower, following })
 		res.status(200).json(ok)
 	})
+
+userRouter.get('/feed', clientAuth, async (req, res) => {
+	const userId = req.id
+	const START = Math.max(0, req.query?.cursor || 0)
+	const LIMIT = 50
+	const END = START + LIMIT
+	const postIds = await redis.lrange(userId, START, END + 1)
+	const hasMore = postIds.length > LIMIT
+	if (hasMore) {
+		postIds.shift()
+	}
+	const posts = await Post.find({ _id: { $in: postIds } })
+		.select('content author createdAt')
+		.populate({ path: 'author', select: 'username' })
+		.sort({ createdAt: -1 })
+		.lean()
+
+	const mappedPosts = posts.map(x => {
+		x.postId = x._id
+		x.authorId = x.author._id
+		x.username = x.author.username
+		delete x._id
+		delete x.author
+		return x
+	})
+
+	res.status(200).json({
+		data: { posts: mappedPosts },
+		paging: { cursor: hasMore ? END : null, hasMore },
+	})
+})
 
 module.exports = userRouter

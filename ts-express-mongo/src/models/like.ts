@@ -1,5 +1,10 @@
 import mongoose from 'mongoose'
 
+interface ILike extends mongoose.Document {
+	post: mongoose.Schema.Types.ObjectId
+	user: mongoose.Schema.Types.ObjectId
+}
+
 const likeSchema = new mongoose.Schema(
 	{
 		post: {
@@ -20,4 +25,4 @@ const likeSchema = new mongoose.Schema(
 
 likeSchema.index({ post: 1, user: 1 }, { unique: true })
 
-export default mongoose.model('Like', likeSchema)
+export default mongoose.model<ILike>('Like', likeSchema)

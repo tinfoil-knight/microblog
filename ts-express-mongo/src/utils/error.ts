@@ -3,9 +3,9 @@ import status from 'statuses'
 class HttpError extends Error {
 	status: any
 	props: any
-	constructor(statusCode, message?, props?) {
+	constructor(statusCode: number, message?: string, props?: any) {
 		const msg = message ? message : status(statusCode)
-		super(msg)
+		super(String(msg))
 		this.status = statusCode
 		this.props = props
 		Error.captureStackTrace(this, HttpError)

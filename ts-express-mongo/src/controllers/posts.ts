@@ -1,3 +1,5 @@
+import { Request, Response } from 'express'
+
 import { Post, Like } from '../models'
 import HttpError from '../utils/error'
 import { clientAuth } from '../utils/auth'
@@ -7,7 +9,7 @@ const postRouter = require('express').Router()
 
 const ok = { message: 'ok' }
 
-postRouter.post('/', clientAuth, async (req, res) => {
+postRouter.post('/', clientAuth, async (req: Request, res: Response) => {
 	const { content } = req.body
 	const author = req.id
 	const post = new Post({ content, author })
@@ -18,7 +20,7 @@ postRouter.post('/', clientAuth, async (req, res) => {
 
 postRouter
 	.route('/:id')
-	.get(async (req, res) => {
+	.get(async (req: Request, res: Response) => {
 		const postId = req.params.id
 		const [post, likes] = await Promise.all([
 			Post.findById(postId)
@@ -38,7 +40,7 @@ postRouter
 		}
 		return res.status(200).json(doc)
 	})
-	.delete(clientAuth, async (req, res) => {
+	.delete(clientAuth, async (req: Request, res: Response) => {
 		const userId = req.id
 		const postId = req.params.id
 		const post = await Post.findById(postId).select('author -_id').lean()
@@ -58,14 +60,14 @@ postRouter
 
 postRouter
 	.route('/:id/likes')
-	.post(clientAuth, async (req, res) => {
+	.post(clientAuth, async (req: Request, res: Response) => {
 		const post = req.params.id
 		const user = req.id
 		const like = new Like({ post, user })
 		await like.save()
 		return res.status(200).json(ok)
 	})
-	.get(async (req, res) => {
+	.get(async (req: Request, res: Response) => {
 		const limit = 20
 		const post = req.params.id
 		const prevId = req.query.cursor
@@ -87,7 +89,7 @@ postRouter
 			.status(200)
 			.json({ data: { usernames }, paging: { cursor: lastId, hasMore } })
 	})
-	.delete(clientAuth, async (req, res) => {
+	.delete(clientAuth, async (req: Request, res: Response) => {
 		const post = req.params.id
 		const user = req.id
 		await Like.deleteOne({ post, user })

@@ -2,14 +2,19 @@ import jsontoken from 'jsonwebtoken'
 import jwt from 'express-jwt'
 import bcrypt from 'bcrypt'
 
+import { NextFunction, Request, Response } from 'express'
+
+const TOKEN_SECRET = process.env.TOKEN_SECRET!
+const LOCAL_AUDIENCE = process.env.LOCAL_AUDIENCE!
+
 const checkClientJwt = jwt({
-	secret: process.env.TOKEN_SECRET || '',
-	audience: process.env.LOCAL_AUDIENCE,
+	secret: TOKEN_SECRET,
+	audience: LOCAL_AUDIENCE,
 	algorithms: ['HS256'], // default for the jsonwebtoken pkg
 	// requestProperty: 'user' default
 })
 
-const writeInfo = (req, _res, next) => {
+const writeInfo = (req: Request, _res: Response, next: NextFunction) => {
 	// Note: Potential Vulnerability
 	if (req.user?.sub) {
 		const id = req.user.sub.split('|')[1]
@@ -20,16 +25,16 @@ const writeInfo = (req, _res, next) => {
 	next()
 }
 
-const createHash = async (string, saltRounds = 10) => {
-	return bcrypt.hash(string, saltRounds, () => {})
+const createHash = async (plaintext: string, saltRounds = 10) => {
+	return bcrypt.hash(plaintext, saltRounds, () => {})
 }
 
-const compareHash = async (plaintext, hash) => {
+const compareHash = async (plaintext: string, hash: string) => {
 	return bcrypt.compare(plaintext, hash, () => {})
 }
 
-const createToken = (data, audience = process.env.LOCAL_AUDIENCE) => {
-	return jsontoken.sign(data, process.env.TOKEN_SECRET, {
+const createToken = (data: any, audience = LOCAL_AUDIENCE) => {
+	return jsontoken.sign(data, TOKEN_SECRET, {
 		expiresIn: '24h',
 		audience,
 		subject: `boilerplate|${data.id}`,
@@ -39,3 +44,25 @@ const createToken = (data, audience = process.env.LOCAL_AUDIENCE) => {
 const clientAuth = [checkClientJwt, writeInfo]
 
 export { clientAuth, createHash, compareHash, createToken }
+
+declare global {
+	namespace Express {
+		interface User extends JwtPayload {}
+		interface Request {
+			id?: string | undefined
+		}
+	}
+}
+
+// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/jsonwebtoken/index.d.ts
+
+interface JwtPayload {
+	[key: string]: any
+	iss?: string | undefined
+	sub?: string | undefined
+	aud?: string | string[] | undefined
+	exp?: number | undefined
+	nbf?: number | undefined
+	iat?: number | undefined
+	jti?: string | undefined
+}

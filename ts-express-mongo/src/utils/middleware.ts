@@ -1,6 +1,10 @@
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
+
+import { Request, Response, NextFunction } from 'express'
+
 import { isDev } from './config'
+import HttpError from './error'
 
 morgan.token('req_body', function (req, _) {
 	if (['POST', 'PUT'].includes(req.method!)) {
@@ -17,13 +21,18 @@ const requestLogger = morgan(logFormat)
 
 //
 
-const unknownEndpoint = (_, res) => {
+const unknownEndpoint = (_: Request, res: Response) => {
 	res.status(404).json({ error: 'unknown endpoint' })
 }
 
 //
 
-const errorHandler = (err, _req, res, _next) => {
+const errorHandler = (
+	err: HttpError,
+	_req: Request,
+	res: Response,
+	_next: NextFunction
+) => {
 	// mongoose
 	if (err.name === 'ValidationError') {
 		err.status = 400
@@ -51,7 +60,7 @@ const errorHandler = (err, _req, res, _next) => {
 
 //
 
-const limiter = (minutes, limit) =>
+const limiter = (minutes: number, limit: number) =>
 	rateLimit({
 		windowMs: minutes * 60 * 1000,
 		max: limit,

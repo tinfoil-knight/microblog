@@ -6,7 +6,7 @@ const mongoOptions = {
 	autoIndex: false,
 }
 
-const connectToDb = async mongoUri => {
+const connectToDb = async (mongoUri: string) => {
 	console.log(`mongoUri: ${mongoUri}`)
 	try {
 		await mongoose.connect(mongoUri, mongoOptions)

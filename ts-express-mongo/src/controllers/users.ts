@@ -1,3 +1,5 @@
+import { Request, Response } from 'express'
+
 import { User, Post, Like, Follow } from '../models'
 
 import HttpError from '../utils/error'
@@ -10,7 +12,7 @@ const ok = { message: 'ok' }
 
 userRouter
 	.route('/')
-	.post(async (req, res) => {
+	.post(async (req: Request, res: Response) => {
 		const { username, email, password } = req.body
 		if (!password) {
 			throw new HttpError(400, 'password missing', { body: req.body })
@@ -24,12 +26,12 @@ userRouter
 		await user.save()
 		res.status(201).json(ok)
 	})
-	.put(clientAuth, async (req, res) => {
+	.put(clientAuth, async (req: Request, res: Response) => {
 		const { email } = req.body
 		await User.updateOne({ _id: req.id }, { email })
 		return res.status(200).json(ok)
 	})
-	.delete(clientAuth, async (req, res) => {
+	.delete(clientAuth, async (req: Request, res: Response) => {
 		const userId = req.id
 		const postIds = (
 			await Post.find({ author: userId }).select('_id').lean()
@@ -42,7 +44,7 @@ userRouter
 		return res.status(200).json(ok)
 	})
 
-userRouter.post('/auth', async (req, res) => {
+userRouter.post('/auth', async (req: Request, res: Response) => {
 	const { username, password } = req.body
 	const user = await User.findOne({ username }).select('passwordHash').lean()
 	const isPswCorrect = await compareHash(password, user.passwordHash)
@@ -54,7 +56,7 @@ userRouter.post('/auth', async (req, res) => {
 	return res.status(200).json({ token })
 })
 
-userRouter.get('/profile/:username', async (req, res) => {
+userRouter.get('/profile/:username', async (req: Request, res: Response) => {
 	const username = req.params.username
 	const user = await User.findOne({ username }).select('createdAt').lean()
 	const [followers, following] = await Promise.all([
@@ -66,7 +68,7 @@ userRouter.get('/profile/:username', async (req, res) => {
 		.json({ id: user._id, createdAt: user.createdAt, followers, following })
 })
 
-userRouter.get('/:id/followers', async (req, res) => {
+userRouter.get('/:id/followers', async (req: Request, res: Response) => {
 	const userId = req.params.id
 	const followerList = await Follow.find({ following: userId })
 		.populate({ path: 'follower', select: 'username -_id' })
@@ -76,7 +78,7 @@ userRouter.get('/:id/followers', async (req, res) => {
 		.json({ followers: followerList.map(x => x.follower.username) })
 })
 
-userRouter.get('/:id/following', async (req, res) => {
+userRouter.get('/:id/following', async (req: Request, res: Response) => {
 	const userId = req.params.id
 	const followingList = await Follow.find({ follower: userId })
 		.populate({ path: 'following', select: 'username -_id' })
@@ -88,7 +90,7 @@ userRouter.get('/:id/following', async (req, res) => {
 
 userRouter
 	.route('/follow/:id')
-	.post(clientAuth, async (req, res) => {
+	.post(clientAuth, async (req: Request, res: Response) => {
 		const follower = req.id
 		const following = req.params.id
 
@@ -100,14 +102,14 @@ userRouter
 		await follow.save()
 		res.status(200).json(ok)
 	})
-	.delete(clientAuth, async (req, res) => {
+	.delete(clientAuth, async (req: Request, res: Response) => {
 		const follower = req.id
 		const following = req.params.id
 		await Follow.deleteOne({ follower, following })
 		res.status(200).json(ok)
 	})
 
-userRouter.get('/feed', clientAuth, async (req, res) => {
+userRouter.get('/feed', clientAuth, async (req: Request, res: Response) => {
 	const userId = req.id
 	const START = Math.max(0, req.query?.cursor || 0)
 	const LIMIT = 50
@@ -137,7 +139,7 @@ userRouter.get('/feed', clientAuth, async (req, res) => {
 	})
 })
 
-userRouter.get('/:id/posts', async (req, res) => {
+userRouter.get('/:id/posts', async (req: Request, res: Response) => {
 	const userId = req.params.id
 	const posts = await Post.find({ author: userId })
 		.select('content createdAt')

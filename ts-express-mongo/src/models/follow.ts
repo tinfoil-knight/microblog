@@ -1,5 +1,10 @@
 import mongoose from 'mongoose'
 
+interface IFollow extends mongoose.Document {
+	follower: mongoose.Schema.Types.ObjectId
+	following: mongoose.Schema.Types.ObjectId
+}
+
 const followSchema = new mongoose.Schema(
 	{
 		follower: {
@@ -20,4 +25,4 @@ const followSchema = new mongoose.Schema(
 
 followSchema.index({ follower: 1, following: 1 }, { unique: true })
 
-export default mongoose.model('Follow', followSchema)
+export default mongoose.model<IFollow>('Follow', followSchema)

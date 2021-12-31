@@ -18,12 +18,11 @@ userRouter
 			throw new HttpError(400, 'password missing', { body: req.body })
 		}
 		const passwordHash = await createHash(password)
-		const user = new User({
+		await User.create({
 			username,
 			email,
 			passwordHash,
 		})
-		await user.save()
 		res.status(201).json(ok)
 	})
 	.put(clientAuth, async (req: Request, res: Response) => {
@@ -47,6 +46,9 @@ userRouter
 userRouter.post('/auth', async (req: Request, res: Response) => {
 	const { username, password } = req.body
 	const user = await User.findOne({ username }).select('passwordHash').lean()
+	if (!user) {
+		throw new HttpError(404)
+	}
 	const isPswCorrect = await compareHash(password, user.passwordHash)
 	// @ts-expect-error
 	if (!isPswCorrect) {
@@ -59,6 +61,9 @@ userRouter.post('/auth', async (req: Request, res: Response) => {
 userRouter.get('/profile/:username', async (req: Request, res: Response) => {
 	const username = req.params.username
 	const user = await User.findOne({ username }).select('createdAt').lean()
+	if (!user) {
+		throw new HttpError(404)
+	}
 	const [followers, following] = await Promise.all([
 		Follow.countDocuments({ following: user._id }),
 		Follow.countDocuments({ follower: user._id }),
@@ -125,7 +130,7 @@ userRouter.get('/feed', clientAuth, async (req: Request, res: Response) => {
 		.sort({ createdAt: -1 })
 		.lean()
 
-	const mappedPosts = posts.map(x => {
+	const mappedPosts = posts.map((x: any) => {
 		x.postId = x._id
 		x.authorId = x.author._id
 		x.author = x.author.username

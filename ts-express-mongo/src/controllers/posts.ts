@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
+import { HydratedDocument } from 'mongoose'
 
-import { Post, Like } from '../models'
+import { Post, IPost, Like } from '../models'
 import HttpError from '../utils/error'
 import { clientAuth } from '../utils/auth'
 import { addJob } from '../utils/queue'
@@ -12,8 +13,7 @@ const ok = { message: 'ok' }
 postRouter.post('/', clientAuth, async (req: Request, res: Response) => {
 	const { content } = req.body
 	const author = req.id
-	const post = new Post({ content, author })
-	await post.save()
+	const post: HydratedDocument<IPost> = await Post.create({ content, author })
 	addJob('fanout', { authorId: author, postId: post._id })
 	res.status(201).json(ok)
 })
@@ -83,6 +83,7 @@ postRouter
 		if (hasMore) {
 			likes.pop()
 		}
+		// @ts-expect-error
 		const lastId = likes.length && hasMore ? likes.at(-1)._id : null
 		const usernames = likes.map(x => x.user.username)
 		return res

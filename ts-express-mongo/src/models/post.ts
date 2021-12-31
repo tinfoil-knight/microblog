@@ -1,15 +1,12 @@
-import mongoose from 'mongoose'
+import { Document, Schema, Model, model } from 'mongoose'
 
-interface IPost extends mongoose.Document {
-	content: string
-	author: mongoose.Schema.Types.ObjectId
-}
+import { IUser } from './user'
 
-const postSchema = new mongoose.Schema(
+const postSchema = new Schema(
 	{
 		content: { type: String, required: true },
 		author: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			required: true,
 			ref: 'User',
 		},
@@ -17,4 +14,14 @@ const postSchema = new mongoose.Schema(
 	{ timestamps: { createdAt: true, updatedAt: false } }
 )
 
-export default mongoose.model<IPost>('Post', postSchema)
+export interface IPost extends Document {
+	content: string
+	createdAt: Date
+	author: IUser['_id']
+}
+
+export interface IPPost extends IPost {
+	author: IUser
+}
+
+export default model<IPost, Model<IPost>>('Post', postSchema)

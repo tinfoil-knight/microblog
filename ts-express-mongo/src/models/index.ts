@@ -1,6 +1,18 @@
-import User from './user'
-import Post from './post'
-import Like from './like'
-import Follow from './follow'
+import User, { IUser } from './user'
+import Post, { IPost, IPPost } from './post'
+import Like, { ILike, IPLike } from './like'
+import Follow, { IFollow, IPFollow } from './follow'
 
-export { User, Post, Like, Follow }
+export {
+	User,
+	IUser,
+	Post,
+	IPost,
+	IPPost,
+	Like,
+	ILike,
+	IPLike,
+	Follow,
+	IFollow,
+	IPFollow,
+}

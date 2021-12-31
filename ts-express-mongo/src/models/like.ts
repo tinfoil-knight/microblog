@@ -1,20 +1,18 @@
-import mongoose from 'mongoose'
+import { Document, Schema, Model, model } from 'mongoose'
 
-interface ILike extends mongoose.Document {
-	post: mongoose.Schema.Types.ObjectId
-	user: mongoose.Schema.Types.ObjectId
-}
+import { IUser } from './user'
+import { IPost } from './post'
 
-const likeSchema = new mongoose.Schema(
+const likeSchema = new Schema(
 	{
 		post: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			required: true,
 			ref: 'Post',
 			index: true,
 		},
 		user: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: Schema.Types.ObjectId,
 			required: true,
 			ref: 'User',
 			index: true,
@@ -25,4 +23,15 @@ const likeSchema = new mongoose.Schema(
 
 likeSchema.index({ post: 1, user: 1 }, { unique: true })
 
-export default mongoose.model<ILike>('Like', likeSchema)
+export interface ILike extends Document {
+	post: IPost['_id']
+	user: IUser['_id']
+	createdAt: Date
+}
+
+export interface IPLike extends Document {
+	post: IPost
+	user: IUser
+}
+
+export default model<ILike, Model<ILike>>('Like', likeSchema)

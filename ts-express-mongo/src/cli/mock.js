@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // eslint-disable-next-line node/no-unpublished-require
 import faker from 'faker'
 
@@ -36,7 +38,7 @@ const getNRand = (n, min, max) => {
 const createUsers = async num => {
 	const users = range(num).map(_ => {
 		const password = faker.internet.password()
-		const passwordHash = createHash(password)
+		const passwordHash = await createHash(password)
 		const user = {
 			username: faker.internet.userName(),
 			email: faker.internet.email(),

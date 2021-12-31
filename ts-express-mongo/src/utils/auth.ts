@@ -3,7 +3,7 @@ import jwt from 'express-jwt'
 import bcrypt from 'bcrypt'
 
 const checkClientJwt = jwt({
-	secret: process.env.TOKEN_SECRET,
+	secret: process.env.TOKEN_SECRET || '',
 	audience: process.env.LOCAL_AUDIENCE,
 	algorithms: ['HS256'], // default for the jsonwebtoken pkg
 	// requestProperty: 'user' default
@@ -20,8 +20,8 @@ const writeInfo = (req, _res, next) => {
 	next()
 }
 
-const createHash = (string, saltRounds = 10) => {
-	return bcrypt.hashSync(string, saltRounds)
+const createHash = async (string, saltRounds = 10) => {
+	return bcrypt.hash(string, saltRounds, () => {})
 }
 
 const compareHash = async (plaintext, hash) => {

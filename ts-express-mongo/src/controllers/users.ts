@@ -15,7 +15,7 @@ userRouter
 		if (!password) {
 			throw new HttpError(400, 'password missing', { body: req.body })
 		}
-		const passwordHash = createHash(password)
+		const passwordHash = await createHash(password)
 		const user = new User({
 			username,
 			email,
@@ -46,6 +46,7 @@ userRouter.post('/auth', async (req, res) => {
 	const { username, password } = req.body
 	const user = await User.findOne({ username }).select('passwordHash').lean()
 	const isPswCorrect = await compareHash(password, user.passwordHash)
+	// @ts-expect-error
 	if (!isPswCorrect) {
 		throw new HttpError(401, 'incorrect password')
 	}

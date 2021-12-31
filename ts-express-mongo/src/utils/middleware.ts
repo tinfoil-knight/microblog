@@ -3,7 +3,8 @@ import rateLimit from 'express-rate-limit'
 import { isDev } from './config'
 
 morgan.token('req_body', function (req, _) {
-	if (['POST', 'PUT'].includes(req.method)) {
+	if (['POST', 'PUT'].includes(req.method!)) {
+		// @ts-expect-error
 		return JSON.stringify(req.body)
 	}
 })
@@ -37,7 +38,11 @@ const errorHandler = (err, _req, res, _next) => {
 	const logMessage = errStatus >= 500 ? err : err.message
 	console.log(logMessage, err.props || '')
 	const errMessage = errStatus >= 500 ? 'internal server error' : err.message
-	const responseObj = { error: errMessage }
+	interface ResponseObj {
+		error: string
+		details?: any
+	}
+	const responseObj: ResponseObj = { error: errMessage }
 	if (err.props) {
 		responseObj.details = err.props
 	}

@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"outDir": "./built",
+		"outDir": "build",
 		"lib": ["esnext"],
 		"target": "esnext",
 		"moduleResolution": "node",
@@ -10,11 +10,9 @@
 		"module": "CommonJS",
 		"baseUrl": ".",
 		"paths": {
-			"*": ["node_modules/*"]
+			"*": ["node_modules/@types/*", "node_modules/*"]
 		},
 		"skipLibCheck": true,
-		"types": ["node"],
-		"typeRoots": ["./node_modules/@types"],
 		"forceConsistentCasingInFileNames": true,
 		"strictNullChecks": true,
 		"noImplicitThis": true,

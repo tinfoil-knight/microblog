@@ -1,4 +1,4 @@
-import jsontoken from 'jsonwebtoken'
+import jsontoken, { JwtPayload } from 'jsonwebtoken'
 import jwt from 'express-jwt'
 import bcrypt from 'bcrypt'
 
@@ -46,23 +46,12 @@ const clientAuth = [checkClientJwt, writeInfo]
 export { clientAuth, createHash, compareHash, createToken }
 
 declare global {
+	// eslint-disable-next-line @typescript-eslint/no-namespace
 	namespace Express {
+		// eslint-disable-next-line @typescript-eslint/no-empty-interface
 		interface User extends JwtPayload {}
 		interface Request {
 			id?: string | undefined
 		}
 	}
-}
-
-// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/jsonwebtoken/index.d.ts
-
-interface JwtPayload {
-	[key: string]: any
-	iss?: string | undefined
-	sub?: string | undefined
-	aud?: string | string[] | undefined
-	exp?: number | undefined
-	nbf?: number | undefined
-	iat?: number | undefined
-	jti?: string | undefined
 }

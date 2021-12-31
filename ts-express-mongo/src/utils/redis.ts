@@ -1,6 +1,5 @@
-declare function require(path: string): any;
-const Redis = require('ioredis')
+import IORedis from 'ioredis'
 
-const redis = new Redis()
+const redis = new IORedis()
 
 export default redis

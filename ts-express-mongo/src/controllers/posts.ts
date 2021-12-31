@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, Response, Router } from 'express'
 import { HydratedDocument } from 'mongoose'
 
 import { Post, IPost, Like } from '../models'
@@ -6,7 +6,7 @@ import HttpError from '../utils/error'
 import { clientAuth } from '../utils/auth'
 import { addJob } from '../utils/queue'
 
-const postRouter = require('express').Router()
+const postRouter = Router()
 
 const ok = { message: 'ok' }
 

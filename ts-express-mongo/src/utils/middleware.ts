@@ -6,9 +6,8 @@ import { Request, Response, NextFunction } from 'express'
 import { isDev } from './config'
 import HttpError from './error'
 
-morgan.token('req_body', function (req, _) {
+morgan.token('req_body', function (req: Request, _) {
 	if (['POST', 'PUT'].includes(req.method!)) {
-		// @ts-expect-error
 		return JSON.stringify(req.body)
 	}
 })

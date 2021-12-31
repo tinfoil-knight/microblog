@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, Response, Router } from 'express'
 
 import { User, Post, Like, Follow } from '../models'
 
@@ -6,7 +6,7 @@ import HttpError from '../utils/error'
 import { clientAuth, createHash, compareHash, createToken } from '../utils/auth'
 import redis from '../utils/redis'
 
-const userRouter = require('express').Router()
+const userRouter = Router()
 
 const ok = { message: 'ok' }
 

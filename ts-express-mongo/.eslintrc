@@ -5,11 +5,15 @@
 		"node": true,
 		"es6": true
 	},
+	"parserOptions": {
+		"project": ["./tsconfig.json"]
+	},
 	"extends": [
 		"eslint:recommended",
 		"prettier",
 		"plugin:node/recommended",
 		"plugin:@typescript-eslint/eslint-recommended",
+		// "plugin:@typescript-eslint/recommended-requiring-type-checking",
 		"plugin:@typescript-eslint/recommended"
 	],
 	"plugins": ["prettier", "@typescript-eslint"],

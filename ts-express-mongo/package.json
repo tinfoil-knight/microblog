@@ -4,12 +4,13 @@
 	"description": "",
 	"main": "build/index.js",
 	"scripts": {
-		"dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./secrets/.env",
+		"dev": "tsnd --respawn --transpile-only -r dotenv/config src/index.ts",
+		"build": "rm -rf build && tsc",
 		"docs:start": "npx --yes redoc-cli serve ../open-api.yaml --watch",
 		"kue:ui": "./node_modules/kue/bin/kue-dashboard -p 3050",
 		"seed": "node src/cli/mock.js",
-		"format": "prettier --write src/",
-		"lint": "eslint src/ --ext .ts"
+		"format": "prettier --write src/**/*{.js,.ts}",
+		"lint": "eslint src/ --ext .ts,.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -32,7 +33,9 @@
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-prettier": "^4.0.0",
 		"faker": "^5.5.3",
-		"prettier": "^2.5.1"
+		"prettier": "^2.5.1",
+		"ts-node-dev": "^1.1.8",
+		"typescript": "^4.5.4"
 	},
 	"dependencies": {
 		"bcrypt": "^5.0.1",

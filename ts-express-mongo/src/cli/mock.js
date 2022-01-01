@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-// eslint-disable-next-line node/no-unpublished-require
+// eslint-disable-next-line node/no-unpublished-import
 import faker from 'faker'
 
 import { connectToDb } from '../utils/db'

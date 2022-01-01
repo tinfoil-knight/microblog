@@ -4,19 +4,19 @@
 		"lib": ["esnext"],
 		"target": "esnext",
 		"moduleResolution": "node",
-		"sourceMap": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"module": "CommonJS",
 		"baseUrl": ".",
 		"paths": {
+			// Order is important here for resolution
 			"*": ["node_modules/@types/*", "node_modules/*"]
 		},
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"strictNullChecks": true,
-		"noImplicitThis": true,
-		"noImplicitAny": true
+		"strict": true,
+		"alwaysStrict": true,
+		"noFallthroughCasesInSwitch": true
 	},
 	"include": ["./src/**/*"],
 	"exclude": ["./node_modules"]

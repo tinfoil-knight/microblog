@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "src/index.js",
 	"scripts": {
-		"dev": "nodemon -r dotenv/config src/index.js dotenv_config_path=./secrets/.env",
+		"dev": "nodemon -r dotenv/config src/index.js",
 		"docs:start": "npx --yes redoc-cli serve ../open-api.yaml --watch",
 		"kue:ui": "./node_modules/kue/bin/kue-dashboard -p 3050",
 		"seed": "node src/cli/mock.js"

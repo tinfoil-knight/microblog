@@ -14,13 +14,17 @@ const postSchema = new Schema(
 	{ timestamps: { createdAt: true, updatedAt: false } }
 )
 
-export interface IPost extends Document {
+interface BasePost extends Document {
+	readonly createdAt: Date
+	readonly _id: Schema.Types.ObjectId
 	content: string
-	createdAt: Date
+}
+
+export interface IPost extends BasePost {
 	author: IUser['_id']
 }
 
-export interface IPPost extends IPost {
+export interface IPPost extends BasePost {
 	author: IUser
 }
 

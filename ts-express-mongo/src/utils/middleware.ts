@@ -1,13 +1,13 @@
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, ErrorRequestHandler, RequestHandler } from 'express'
 
 import { isDev } from './config'
 import HttpError from './error'
 
-morgan.token('req_body', function (req: Request, _) {
-	if (['POST', 'PUT'].includes(req.method!)) {
+morgan.token('req_body', function (req: Request, _: Response) {
+	if (['POST', 'PUT'].includes(req.method)) {
 		return JSON.stringify(req.body)
 	}
 })
@@ -20,17 +20,17 @@ const requestLogger = morgan(logFormat)
 
 //
 
-const unknownEndpoint = (_: Request, res: Response) => {
+const unknownEndpoint: RequestHandler = (_, res) => {
 	res.status(404).json({ error: 'unknown endpoint' })
 }
 
 //
 
-const errorHandler = (
+const errorHandler: ErrorRequestHandler = (
 	err: HttpError,
-	_req: Request,
-	res: Response,
-	_next: NextFunction
+	_req,
+	res,
+	_next
 ) => {
 	// mongoose
 	if (err.name === 'ValidationError') {
@@ -46,11 +46,10 @@ const errorHandler = (
 	const logMessage = errStatus >= 500 ? err : err.message
 	console.log(logMessage, err.props || '')
 	const errMessage = errStatus >= 500 ? 'internal server error' : err.message
-	interface ResponseObj {
+	const responseObj: {
 		error: string
-		details?: any
-	}
-	const responseObj: ResponseObj = { error: errMessage }
+		details?: Record<string, unknown>
+	} = { error: errMessage }
 	if (err.props) {
 		responseObj.details = err.props
 	}

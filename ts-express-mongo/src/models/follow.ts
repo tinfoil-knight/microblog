@@ -22,13 +22,17 @@ const followSchema = new Schema(
 
 followSchema.index({ follower: 1, following: 1 }, { unique: true })
 
-export interface IFollow extends Document {
-	follower: IUser['_id']
-	following: IUser['_id']
-	createdAt: Date
+interface BaseFollow extends Document {
+	readonly _id: Schema.Types.ObjectId
+	readonly createdAt: Date
 }
 
-export interface IPFollow extends Document {
+export interface IFollow extends BaseFollow {
+	follower: IUser['_id']
+	following: IUser['_id']
+}
+
+export interface IPFollow extends BaseFollow {
 	follower: IUser
 	following: IUser
 }

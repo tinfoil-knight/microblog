@@ -16,11 +16,12 @@ const userSchema = new Schema(
 )
 
 export interface IUser extends Document {
+	readonly _id: Schema.Types.ObjectId
 	username: string
 	email?: string
 	passwordHash: string
-	createdAt: Date
-	updatedAt: Date
+	readonly createdAt: Date
+	readonly updatedAt: Date
 }
 
 export default model<IUser, Model<IUser>>('User', userSchema)

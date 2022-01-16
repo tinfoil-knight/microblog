@@ -26,14 +26,23 @@ const writeInfo = (req: Request, _res: Response, next: NextFunction) => {
 }
 
 const createHash = async (plaintext: string, saltRounds = 10) => {
-	return bcrypt.hash(plaintext, saltRounds, () => {})
+	// eslint-disable-next-line @typescript-eslint/await-thenable
+	const hash = await bcrypt.hash(plaintext, saltRounds, () => {})
+	return hash
 }
 
 const compareHash = async (plaintext: string, hash: string) => {
-	return bcrypt.compare(plaintext, hash, () => {})
+	// eslint-disable-next-line @typescript-eslint/await-thenable
+	const result = await bcrypt.compare(plaintext, hash, () => {})
+	return result
 }
 
-const createToken = (data: any, audience = LOCAL_AUDIENCE) => {
+const createToken = (
+	data: {
+		id: string
+	},
+	audience = LOCAL_AUDIENCE
+) => {
 	return jsontoken.sign(data, TOKEN_SECRET, {
 		expiresIn: '24h',
 		audience,

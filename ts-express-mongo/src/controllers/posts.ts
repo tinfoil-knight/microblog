@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express'
-import { HydratedDocument } from 'mongoose'
+import { LeanDocument } from 'mongoose'
 
-import { Post, IPost, Like } from '../models'
+import { Post, IUser, Like, IPLike, IPPost } from '../models'
 import HttpError from '../utils/error'
 import { clientAuth } from '../utils/auth'
 import { addJob } from '../utils/queue'
@@ -11,9 +11,9 @@ const postRouter = Router()
 const ok = { message: 'ok' }
 
 postRouter.post('/', clientAuth, async (req: Request, res: Response) => {
+	const author = req.id!
 	const { content } = req.body
-	const author = req.id
-	const post: HydratedDocument<IPost> = await Post.create({ content, author })
+	const post = await Post.create({ author, content })
 	addJob('fanout', { authorId: author, postId: post._id })
 	res.status(201).json(ok)
 })
@@ -22,13 +22,21 @@ postRouter
 	.route('/:id')
 	.get(async (req: Request, res: Response) => {
 		const postId = req.params.id
-		const [post, likes] = await Promise.all([
+
+		const [post, likes]: [
+			Pick<LeanDocument<IPPost>, 'author' | 'content' | 'createdAt'>,
+			number
+		] = await Promise.all([
 			Post.findById(postId)
-				.populate({ path: 'author', select: 'username -_id' })
+				.populate<{ author: IUser }>({
+					path: 'author',
+					select: 'username -_id',
+				})
 				.select('content createdAt -_id')
 				.lean(),
 			Like.countDocuments({ post: postId }),
 		])
+
 		if (!post) {
 			throw new HttpError(404)
 		}
@@ -41,13 +49,13 @@ postRouter
 		return res.status(200).json(doc)
 	})
 	.delete(clientAuth, async (req: Request, res: Response) => {
-		const userId = req.id
+		const userId = req.id!
 		const postId = req.params.id
 		const post = await Post.findById(postId).select('author -_id').lean()
-		if (!post) {
+		if (post == null) {
 			throw new HttpError(404)
 		}
-		const authorId = post.author.toString()
+		const authorId = String(post.author)
 		if (userId !== authorId) {
 			throw new HttpError(403)
 		}
@@ -62,7 +70,7 @@ postRouter
 	.route('/:id/likes')
 	.post(clientAuth, async (req: Request, res: Response) => {
 		const post = req.params.id
-		const user = req.id
+		const user = req.id!
 		const like = new Like({ post, user })
 		await like.save()
 		return res.status(200).json(ok)
@@ -72,19 +80,19 @@ postRouter
 		const post = req.params.id
 		const prevId = req.query.cursor
 		const filter = prevId ? { post, _id: { $lt: prevId } } : { post }
-
-		const likes = await Like.find(filter)
-			.populate({ path: 'user', select: 'username -_id' })
-			.select('user')
+		const likes: Pick<LeanDocument<IPLike>, '_id' | 'user'>[] = await Like.find(
+			filter
+		)
 			.sort({ _id: 'desc' })
 			.limit(limit + 1)
+			.populate({ path: 'user', select: 'username' })
+			.select('user')
 			.lean()
 		const hasMore = likes.length === limit + 1
 		if (hasMore) {
 			likes.pop()
 		}
-		// @ts-expect-error
-		const lastId = likes.length && hasMore ? likes.at(-1)._id : null
+		const lastId = likes.length && hasMore ? String(likes.at(-1)._id) : null
 		const usernames = likes.map(x => x.user.username)
 		return res
 			.status(200)
@@ -92,7 +100,7 @@ postRouter
 	})
 	.delete(clientAuth, async (req: Request, res: Response) => {
 		const post = req.params.id
-		const user = req.id
+		const user = req.id!
 		await Like.deleteOne({ post, user })
 		return res.status(200).json(ok)
 	})

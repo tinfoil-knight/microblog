@@ -23,13 +23,16 @@ const likeSchema = new Schema(
 
 likeSchema.index({ post: 1, user: 1 }, { unique: true })
 
-export interface ILike extends Document {
-	post: IPost['_id']
-	user: IUser['_id']
-	createdAt: Date
+interface BaseLike extends Document {
+	readonly createdAt: Date
 }
 
-export interface IPLike extends Document {
+export interface ILike extends BaseLike {
+	post: IPost['_id']
+	user: IUser['_id']
+}
+
+export interface IPLike extends BaseLike {
 	post: IPost
 	user: IUser
 }

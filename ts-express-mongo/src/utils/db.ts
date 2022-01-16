@@ -11,7 +11,9 @@ const connectToDb = async (mongoUri: string) => {
 	try {
 		await mongoose.connect(mongoUri, mongoOptions)
 		console.log('connected to MongoDB')
-	} catch (err) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	} catch (err: any) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		console.log('error connecting to MongoDB:', err.message)
 		console.log('shutting down the server')
 		// eslint-disable-next-line

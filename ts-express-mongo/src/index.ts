@@ -14,7 +14,8 @@ const app: Application = express()
 
 console.log('NODE_ENV', process.env.NODE_ENV)
 console.log('isProduction', isProd)
-connectToDb(MONGODB_URI)
+
+void connectToDb(MONGODB_URI)
 
 app.set('trust proxy', 1)
 
@@ -22,7 +23,7 @@ app.use(limiter(15, 200))
 app.use(requestLogger)
 app.use(express.json())
 
-app.get('/health', async (_req, res) => {
+app.get('/health', (_req, res) => {
 	res.status(200).json({ status: 'ok' })
 })
 

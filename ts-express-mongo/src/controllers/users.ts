@@ -1,6 +1,16 @@
 import { Request, Response, Router } from 'express'
+import { LeanDocument } from 'mongoose'
 
-import { User, Post, Like, Follow } from '../models'
+import {
+	User,
+	Post,
+	Like,
+	Follow,
+	IPost,
+	IPPost,
+	IUser,
+	IPFollow,
+} from '../models'
 
 import HttpError from '../utils/error'
 import { clientAuth, createHash, compareHash, createToken } from '../utils/auth'
@@ -10,6 +20,8 @@ const userRouter = Router()
 
 const ok = { message: 'ok' }
 
+type L<T> = LeanDocument<T>
+
 userRouter
 	.route('/')
 	.post(async (req: Request, res: Response) => {
@@ -17,7 +29,7 @@ userRouter
 		if (!password) {
 			throw new HttpError(400, 'password missing', { body: req.body })
 		}
-		const passwordHash = await createHash(password)
+		const passwordHash = await createHash(String(password))
 		await User.create({
 			username,
 			email,
@@ -32,7 +44,7 @@ userRouter
 	})
 	.delete(clientAuth, async (req: Request, res: Response) => {
 		const userId = req.id
-		const postIds = (
+		const postIds: L<IPost>['_id'][] = (
 			await Post.find({ author: userId }).select('_id').lean()
 		).map(x => x._id)
 		await Promise.all([
@@ -45,23 +57,32 @@ userRouter
 
 userRouter.post('/auth', async (req: Request, res: Response) => {
 	const { username, password } = req.body
-	const user = await User.findOne({ username }).select('passwordHash').lean()
+	const user: Pick<L<IUser>, '_id' | 'passwordHash'> = await User.findOne({
+		username,
+	})
+		.select('passwordHash')
+		.lean()
 	if (!user) {
-		throw new HttpError(404)
+		throw new HttpError(404, 'no such user')
 	}
-	const isPswCorrect = await compareHash(password, user.passwordHash)
+	const isPswCorrect = await compareHash(String(password), user.passwordHash)
 	// @ts-expect-error
 	if (!isPswCorrect) {
 		throw new HttpError(401, 'incorrect password')
 	}
-	const token = await createToken({ id: user._id })
+	// eslint-disable-next-line @typescript-eslint/await-thenable
+	const token = await createToken({ id: String(user._id) })
 	return res.status(200).json({ token })
 })
 
 userRouter.get('/profile/:username', async (req: Request, res: Response) => {
 	const username = req.params.username
-	const user = await User.findOne({ username }).select('createdAt').lean()
-	if (!user) {
+	const user: Pick<L<IUser>, '_id' | 'createdAt'> = await User.findOne({
+		username,
+	})
+		.select('createdAt')
+		.lean()
+	if (user == null) {
 		throw new HttpError(404)
 	}
 	const [followers, following] = await Promise.all([
@@ -75,8 +96,11 @@ userRouter.get('/profile/:username', async (req: Request, res: Response) => {
 
 userRouter.get('/:id/followers', async (req: Request, res: Response) => {
 	const userId = req.params.id
-	const followerList = await Follow.find({ following: userId })
+	const followerList: Pick<L<IPFollow>, 'follower'>[] = await Follow.find({
+		following: userId,
+	})
 		.populate({ path: 'follower', select: 'username -_id' })
+		.select('follower')
 		.lean()
 	res
 		.status(200)
@@ -85,8 +109,11 @@ userRouter.get('/:id/followers', async (req: Request, res: Response) => {
 
 userRouter.get('/:id/following', async (req: Request, res: Response) => {
 	const userId = req.params.id
-	const followingList = await Follow.find({ follower: userId })
+	const followingList: Pick<L<IPFollow>, 'following'>[] = await Follow.find({
+		follower: userId,
+	})
 		.populate({ path: 'following', select: 'username -_id' })
+		.select('following')
 		.lean()
 	res
 		.status(200)
@@ -96,7 +123,7 @@ userRouter.get('/:id/following', async (req: Request, res: Response) => {
 userRouter
 	.route('/follow/:id')
 	.post(clientAuth, async (req: Request, res: Response) => {
-		const follower = req.id
+		const follower = req.id!
 		const following = req.params.id
 
 		if (follower === following) {
@@ -115,8 +142,8 @@ userRouter
 	})
 
 userRouter.get('/feed', clientAuth, async (req: Request, res: Response) => {
-	const userId = req.id
-	const START = Math.max(0, req.query?.cursor || 0)
+	const userId = req.id!
+	const START = Math.max(0, Number(req.query?.cursor || 0))
 	const LIMIT = 50
 	const END = START + LIMIT
 	const postIds = await redis.lrange(userId, START, END + 1)
@@ -124,16 +151,17 @@ userRouter.get('/feed', clientAuth, async (req: Request, res: Response) => {
 	if (hasMore) {
 		postIds.shift()
 	}
-	const posts = await Post.find({ _id: { $in: postIds } })
-		.select('content author createdAt')
+	const posts: Partial<L<IPPost>>[] = await Post.find({
+		_id: { $in: postIds },
+	})
 		.populate({ path: 'author', select: 'username' })
 		.sort({ createdAt: -1 })
 		.lean()
 
-	const mappedPosts = posts.map((x: any) => {
+	const mappedPosts = posts.map(x => {
 		x.postId = x._id
-		x.authorId = x.author._id
-		x.author = x.author.username
+		x.authorId = x.author!._id
+		x.author = x.author!.username
 		delete x._id
 		return x
 	})
@@ -146,11 +174,14 @@ userRouter.get('/feed', clientAuth, async (req: Request, res: Response) => {
 
 userRouter.get('/:id/posts', async (req: Request, res: Response) => {
 	const userId = req.params.id
-	const posts = await Post.find({ author: userId })
+	type PostRes = Pick<IPost, '_id' | 'content' | 'createdAt'>
+	const posts: L<PostRes>[] = await Post.find({
+		author: userId,
+	})
 		.select('content createdAt')
 		.sort({ _id: -1 })
 		.lean()
-	const mappedPosts = posts.map(x => {
+	const mappedPosts = posts.map((x: Partial<PostRes>) => {
 		x.id = x._id
 		delete x._id
 		return x

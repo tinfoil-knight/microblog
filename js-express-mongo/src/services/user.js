@@ -24,14 +24,14 @@ module.exports = class UserService {
 		return token
 	}
 
-	static async UpdateMail({ userId, email }) {
+	static async UpdateMail(userId, email) {
 		await User.updateOne({ _id: userId }, { email })
 	}
 
 	static async GetProfile(username) {
 		const user = await User.findOne({ username }).select('createdAt').lean()
 		if (!user) {
-			return null
+			throw new HttpError(404)
 		}
 		const [followers, following] = await Promise.all([
 			Follow.countDocuments({ following: user._id }),

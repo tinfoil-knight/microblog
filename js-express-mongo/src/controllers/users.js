@@ -14,7 +14,7 @@ userRouter
 	})
 	.put(clientAuth, async (req, res) => {
 		const { email } = req.body
-		await UserService.UpdateMail({ userId: req.id, email })
+		await UserService.UpdateMail(req.id, email)
 		return res.status(200).json(ok)
 	})
 	.delete(clientAuth, async (req, res) => {

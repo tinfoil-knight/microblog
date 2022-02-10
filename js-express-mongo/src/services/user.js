@@ -4,7 +4,7 @@ const { createHash, compareHash, createToken } = require('../utils/auth')
 const { User, Post, Like, Follow } = require('../models')
 
 module.exports = class UserService {
-	async SignUp({ username, email, password }) {
+	static async SignUp({ username, email, password }) {
 		const passwordHash = createHash(password)
 		const user = new User({
 			username,
@@ -14,7 +14,7 @@ module.exports = class UserService {
 		await user.save()
 	}
 
-	async GetToken(username, password) {
+	static async GetToken(username, password) {
 		const user = await User.findOne({ username }).select('passwordHash').lean()
 		const isPswCorrect = await compareHash(password, user.passwordHash)
 		if (isPswCorrect) {
@@ -24,11 +24,11 @@ module.exports = class UserService {
 		return token
 	}
 
-	async UpdateMail({ userId, email }) {
+	static async UpdateMail({ userId, email }) {
 		await User.updateOne({ _id: userId }, { email })
 	}
 
-	async GetProfile(username) {
+	static async GetProfile(username) {
 		const user = await User.findOne({ username }).select('createdAt').lean()
 		if (!user) {
 			return null
@@ -40,30 +40,30 @@ module.exports = class UserService {
 		return { id: user._id, createdAt: user.createdAt, followers, following }
 	}
 
-	async GetFollowers(userId) {
+	static async GetFollowers(userId) {
 		const followerList = await Follow.find({ following: userId })
 			.populate({ path: 'follower', select: 'username -_id' })
 			.lean()
 		return followerList.map(x => x.follower.username)
 	}
 
-	async GetFollowing(userId) {
+	static async GetFollowing(userId) {
 		const followingList = await Follow.find({ follower: userId })
 			.populate({ path: 'following', select: 'username -_id' })
 			.lean()
 		return followingList.map(x => x.following.username)
 	}
 
-	async Follow(follower, following) {
+	static async Follow(follower, following) {
 		const follow = new Follow({ follower, following })
 		await follow.save()
 	}
 
-	async Unfollow(follower, following) {
+	static async Unfollow(follower, following) {
 		await Follow.deleteOne({ follower, following })
 	}
 
-	async GetPosts(userId) {
+	static async GetPosts(userId) {
 		const posts = await Post.find({ author: userId })
 			.select('content createdAt')
 			.sort({ _id: -1 })
@@ -76,7 +76,7 @@ module.exports = class UserService {
 		return mappedPosts
 	}
 
-	async GetFeed(userId, cursor) {
+	static async GetFeed(userId, cursor) {
 		const START = Math.max(0, cursor || 0)
 		const LIMIT = 50
 		const END = START + LIMIT
@@ -102,7 +102,7 @@ module.exports = class UserService {
 		return { posts: mappedPosts, cursor: hasMore ? END : null, hasMore }
 	}
 
-	async Delete(userId) {
+	static async Delete(userId) {
 		const postIds = (
 			await Post.find({ author: userId }).select('_id').lean()
 		).map(x => x._id)

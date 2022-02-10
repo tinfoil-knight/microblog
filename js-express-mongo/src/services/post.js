@@ -3,13 +3,13 @@ const { addJob } = require('../utils/queue')
 const { Post, Like } = require('../models')
 
 module.exports = class PostService {
-	async CreatePost({ content, author }) {
+	static async CreatePost({ content, author }) {
 		const post = new Post({ content, author })
 		await post.save()
 		addJob('fanout', { authorId: author, postId: post._id })
 	}
 
-	async GetPost(postId) {
+	static async GetPost(postId) {
 		const [post, likes] = await Promise.all([
 			Post.findById(postId)
 				.populate({ path: 'author', select: 'username -_id' })
@@ -28,16 +28,16 @@ module.exports = class PostService {
 		}
 	}
 
-	async Like(postId, userId) {
+	static async Like(postId, userId) {
 		const like = new Like({ post: postId, user: userId })
 		await like.save()
 	}
 
-	async Unlike(postId, userId) {
+	static async Unlike(postId, userId) {
 		await Like.deleteOne({ post: postId, user: userId })
 	}
 
-	async GetLikes(postId, cursor) {
+	static async GetLikes(postId, cursor) {
 		const limit = 20
 		const post = postId
 		const prevId = cursor
@@ -58,7 +58,7 @@ module.exports = class PostService {
 		return { usernames, lastId, hasMore }
 	}
 
-	async DeletePost(postId, userId) {
+	static async DeletePost(postId, userId) {
 		const post = await Post.findById(postId).select('author -_id').lean()
 		if (!post) {
 			throw new HttpError(404)

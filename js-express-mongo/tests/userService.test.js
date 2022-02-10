@@ -1,5 +1,5 @@
-const faker = require('faker') // eslint-disable-line node/no-unpublished-require
-const test = require('ava') // eslint-disable-line node/no-unpublished-require, node/no-missing-require
+const faker = require('faker')
+const test = require('ava')
 const { UserService } = require('../src/services')
 const { User } = require('../src/models')
 

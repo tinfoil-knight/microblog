@@ -1,0 +1,10 @@
+{
+	"rules": {
+		"node/no-missing-require": [
+			"error",
+			{
+				"allowModules": ["ava"]
+			}
+		]
+	}
+}

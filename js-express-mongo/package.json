@@ -40,6 +40,9 @@
 	"engines": {
 		"node": ">=16.13.1"
 	},
+	"files": [
+		"src"
+	],
 	"ava": {
 		"files": [
 			"tests/**/*.test.js"

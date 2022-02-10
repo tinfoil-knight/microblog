@@ -1,7 +1,4 @@
-// eslint-disable-next-line node/no-unpublished-require
-const faker = require('faker')
-// eslint-disable-next-line node/no-unpublished-require
-// const BluePromise = require('bluebird')
+const faker = require('faker') // eslint-disable-line node/no-unpublished-require
 const { connectToDb } = require('../utils/db')
 const { createHash } = require('../utils/auth')
 const { addJob } = require('../utils/queue')
@@ -103,13 +100,13 @@ const addLikes = async () => {
 	const CHUNK_SIZE = 20000
 	const likeGen = chunks(allPosts, CHUNK_SIZE)
 
-	console.time(`allInserts`)
+	console.time(`bulkLikeInserts`)
 	for (let chunk of likeGen) {
-		console.time(`label${chunk[0].user}`)
+		// console.time(`label${chunk[0].user}`)
 		await Like.insertMany(chunk, { ordered: false })
-		console.timeEnd(`label${chunk[0].user}`)
+		// console.timeEnd(`label${chunk[0].user}`)
 	}
-	console.timeEnd(`allInserts`)
+	console.timeEnd(`bulkLikeInserts`)
 
 	const likes = await Like.countDocuments({})
 	console.log('likes added:', likes)
@@ -152,10 +149,14 @@ const buildFeed = async () => {
 }
 
 const main = async () => {
+	const NUM_USERS = 10
+	const MIN_POSTS_PER_USER = 10
+	const MAX_POSTS_PER_USER = 50
+
 	await connectToDb(process.env.MONGODB_URI)
 	await cleanup()
-	await createUsers(100)
-	await addPosts(10, 500)
+	await createUsers(NUM_USERS)
+	await addPosts(MIN_POSTS_PER_USER, MAX_POSTS_PER_USER)
 	await addFollows()
 	await addLikes()
 	await buildFeed()

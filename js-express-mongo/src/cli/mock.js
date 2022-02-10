@@ -1,18 +1,8 @@
 const faker = require('faker') // eslint-disable-line node/no-unpublished-require
-const { connectToDb } = require('../utils/db')
 const { createHash } = require('../utils/auth')
 const { addJob } = require('../utils/queue')
 const { User, Post, Like, Follow } = require('../models')
-
-const cleanup = async () => {
-	await Promise.all([
-		User.deleteMany({}),
-		Post.deleteMany({}),
-		Like.deleteMany({}),
-		Follow.deleteMany({}),
-	])
-	console.log('mongodb cleanup done')
-}
+const { mongoDbCleanup, mongoDbConnect } = require('../utils/test-helpers')
 
 const range = num => {
 	return [...Array(num).keys()]
@@ -153,8 +143,9 @@ const main = async () => {
 	const MIN_POSTS_PER_USER = 10
 	const MAX_POSTS_PER_USER = 50
 
-	await connectToDb(process.env.MONGODB_URI)
-	await cleanup()
+	await mongoDbConnect()
+	await mongoDbCleanup()
+	console.log('mongodb cleanup done')
 	await createUsers(NUM_USERS)
 	await addPosts(MIN_POSTS_PER_USER, MAX_POSTS_PER_USER)
 	await addFollows()

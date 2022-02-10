@@ -13,6 +13,13 @@ const followSchema = new mongoose.Schema(
 			required: true,
 			ref: 'User',
 			index: true,
+			validate: {
+				validator: v => {
+					// TODO: check if both string or ObjectIDs
+					return this.follower != v
+				},
+				message: 'follower and following can not be same',
+			},
 		},
 	},
 	{ timestamps: { createdAt: true, updatedAt: false } }

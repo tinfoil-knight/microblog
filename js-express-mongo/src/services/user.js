@@ -17,7 +17,7 @@ module.exports = class UserService {
 	static async GetToken(username, password) {
 		const user = await User.findOne({ username }).select('passwordHash').lean()
 		const isPswCorrect = await compareHash(password, user.passwordHash)
-		if (isPswCorrect) {
+		if (!isPswCorrect) {
 			throw new HttpError(401, 'incorrect password')
 		}
 		const token = await createToken({ id: user._id })

@@ -4,8 +4,8 @@
 	"description": "",
 	"main": "src/index.js",
 	"scripts": {
-		"test": "ava --verbose --serial",
-		"test:watch": "ava --verbose --watch",
+		"test": "ava --serial",
+		"test:watch": "ava --watch",
 		"dev": "nodemon -r dotenv/config src/index.js",
 		"docs:start": "npx --yes redoc-cli serve ../open-api.yaml --watch",
 		"kue:ui": "./node_modules/kue/bin/kue-dashboard -p 3050",
@@ -48,6 +48,7 @@
 			"tests/**/*.test.js"
 		],
 		"failFast": false,
-		"timeout": "2m"
+		"timeout": "2m",
+		"verbose": true
 	}
 }

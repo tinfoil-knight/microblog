@@ -27,8 +27,16 @@ const getMockUserData = () => {
 	return user
 }
 
-const createUser = async () => {
-	const { username, email, password } = getMockUserData()
+/**
+ *
+ * @param {Object} [data] If not provided mock data is generated and used
+ * @param {Object} data.username
+ * @param {Object} data.email
+ * @param {Object} data.password
+ * @returns {*} mongoose document
+ */
+const createUser = async data => {
+	const { username, email, password } = data || getMockUserData()
 	const passwordHash = createHash(password)
 	const user = await User.create({
 		username,

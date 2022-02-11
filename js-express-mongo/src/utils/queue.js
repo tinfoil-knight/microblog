@@ -32,6 +32,14 @@ async function fanout(data, done) {
 	done()
 }
 
+q.on('error', function (err) {
+	console.log('REDIS:kue', err)
+	if (err.code === 'ECONNREFUSED') {
+		// eslint-disable-next-line no-process-exit
+		process.exit(1)
+	}
+})
+
 module.exports = {
 	addJob,
 }

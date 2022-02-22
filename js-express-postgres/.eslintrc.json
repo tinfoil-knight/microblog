@@ -1,0 +1,30 @@
+{
+	"env": {
+		"node": true,
+		"es2021": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"prettier",
+		"plugin:node/recommended",
+		"plugin:import/recommended"
+	],
+	"plugins": ["prettier"],
+	"parserOptions": {
+		"ecmaVersion": 12
+	},
+	"rules": {
+		"prettier/prettier": ["error"],
+		"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+		"import/order": [
+			"warn",
+			{
+				"newlines-between": "always",
+				"alphabetize": {
+					"order": "asc",
+					"caseInsensitive": true
+				}
+			}
+		]
+	}
+}

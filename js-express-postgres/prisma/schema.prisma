@@ -18,6 +18,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   posts        Post[]
+  likes        Like[]
 }
 
 model Post {
@@ -26,4 +27,16 @@ model Post {
   createdAt DateTime @default(now())
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+  likes     Like[]
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
 }

@@ -10,6 +10,7 @@ const MIN_POSTS_PER_USER = 10
 const MAX_POSTS_PER_USER = 100
 
 async function main() {
+	await prisma.like.deleteMany({})
 	await prisma.post.deleteMany({})
 	await prisma.user.deleteMany({})
 
@@ -42,6 +43,22 @@ async function main() {
 	}))
 	const postResult = await prisma.post.createMany({ data: postsData })
 	console.log({ postResult })
+
+	const posts = await prisma.post.findMany({ select: { id: true } })
+	const postIds = posts.map(x => x.id)
+	const postsWithLikes = postIds
+		.map(postId => {
+			const numLikes = getRandIntInclusive(0, userIds.length)
+			const idxs = getNRand(numLikes, 0, users.length - 1)
+			const peopleWhoLiked = idxs.map(i => userIds[i])
+			return peopleWhoLiked.map(id => ({
+				userId: id,
+				postId,
+			}))
+		})
+		.flat()
+	const likeResult = await prisma.like.createMany({ data: postsWithLikes })
+	console.log({ likeResult })
 }
 
 main()
@@ -73,4 +90,13 @@ function shuffleArray(array) {
 		array[i] = array[j]
 		array[j] = temp
 	}
+}
+
+// Will return n or less unique integers
+function getNRand(n, min, max) {
+	const randomList = (num, min, max) => {
+		return [...Array(num).keys()].map(_ => getRandIntInclusive(min, max))
+	}
+	const nums = randomList(n, min, max)
+	return [...new Set(nums)]
 }

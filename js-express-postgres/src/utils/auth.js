@@ -25,7 +25,7 @@ const createHash = (string, saltRounds = 10) => {
 }
 
 const compareHash = async (plaintext, hash) => {
-	return await bcrypt.compare(plaintext, hash)
+	return bcrypt.compare(plaintext, hash)
 }
 
 const createToken = (data, audience = process.env.LOCAL_AUDIENCE) => {

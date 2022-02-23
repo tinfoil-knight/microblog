@@ -13,6 +13,7 @@ async function main() {
 	await prisma.like.deleteMany({})
 	await prisma.post.deleteMany({})
 	await prisma.user.deleteMany({})
+	await prisma.follow.deleteMany({})
 
 	console.log('creating users')
 	const usersData = range(NUM_USERS).map(_ => {

@@ -14,6 +14,7 @@ async function main() {
 	await prisma.post.deleteMany({})
 	await prisma.user.deleteMany({})
 
+	console.log('creating users')
 	const usersData = range(NUM_USERS).map(_ => {
 		const password = faker.internet.password()
 
@@ -28,6 +29,7 @@ async function main() {
 	const userResult = await prisma.user.createMany({ data: usersData })
 	console.log({ userResult })
 
+	console.log('adding posts to users')
 	const users = await prisma.user.findMany({ select: { id: true } })
 	const userIds = users.map(x => x.id)
 	let authorIds = userIds
@@ -44,6 +46,7 @@ async function main() {
 	const postResult = await prisma.post.createMany({ data: postsData })
 	console.log({ postResult })
 
+	console.log('adding likes to posts')
 	const posts = await prisma.post.findMany({ select: { id: true } })
 	const postIds = posts.map(x => x.id)
 	const postsWithLikes = postIds
@@ -59,6 +62,20 @@ async function main() {
 		.flat()
 	const likeResult = await prisma.like.createMany({ data: postsWithLikes })
 	console.log({ likeResult })
+
+	console.log('adding follows')
+	await Promise.all(
+		userIds.map(userId => {
+			const n = getRandIntInclusive(0, userIds.length)
+			const nums = getNRand(n, 0, userIds.length - 1)
+			const followerIds = nums.map(i => userIds[i]).filter(x => x !== userId)
+			return prisma.follow.createMany({
+				data: followerIds.map(x => ({ followerId: userId, followingId: x })),
+			})
+		})
+	)
+	const followResult = await prisma.follow.count()
+	console.log({ followResult })
 }
 
 main()

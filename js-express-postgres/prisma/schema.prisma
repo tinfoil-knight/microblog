@@ -19,8 +19,8 @@ model User {
   updatedAt    DateTime @updatedAt
   posts        Post[]
   likes        Like[]
-  followers    Follow[] @relation("follower")
-  following    Follow[] @relation("following")
+  followers    Follow[] @relation("following")
+  following    Follow[] @relation("follower")
 }
 
 model Post {

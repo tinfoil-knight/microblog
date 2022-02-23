@@ -70,7 +70,7 @@ async function main() {
 			const nums = getNRand(n, 0, userIds.length - 1)
 			const followerIds = nums.map(i => userIds[i]).filter(x => x !== userId)
 			return prisma.follow.createMany({
-				data: followerIds.map(x => ({ followerId: userId, followingId: x })),
+				data: followerIds.map(x => ({ followerId: x, followingId: userId })),
 			})
 		})
 	)

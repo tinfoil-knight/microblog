@@ -2,22 +2,14 @@ const test = require('ava')
 const faker = require('faker')
 const jsonwebtoken = require('jsonwebtoken')
 
-const { User } = require('../src/models')
 const { UserService } = require('../src/services')
-const {
-	mongoDbCleanup,
-	mongoDbConnect,
-	getMockUserData,
-	createUser,
-} = require('../src/utils/test-helpers')
+const { getMockUserData, createUser } = require('../src/utils/test-helpers')
 
 test.before(async () => {
-	await mongoDbConnect()
+	// connect to db
 })
 
-test.after.always('mongodb cleanup', async () => {
-	await mongoDbCleanup()
-})
+test.after.always('db cleanup', async () => {})
 
 test('should sign-up user', async t => {
 	const user = getMockUserData()

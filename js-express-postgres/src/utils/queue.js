@@ -1,7 +1,5 @@
 const kue = require('kue')
 
-const { Follow } = require('../models')
-
 const redis = require('./redis')
 
 const q = kue.createQueue()

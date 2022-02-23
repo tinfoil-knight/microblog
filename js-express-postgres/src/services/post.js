@@ -1,4 +1,3 @@
-const { Post, Like } = require('../models')
 const HttpError = require('../utils/error')
 const { addJob } = require('../utils/queue')
 

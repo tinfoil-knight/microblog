@@ -1,23 +1,6 @@
 const faker = require('faker') // eslint-disable-line node/no-unpublished-require
 
-const { User, Post, Like, Follow } = require('../models')
-
 const { createHash } = require('./auth')
-const { MONGODB_URI } = require('./config')
-const { connectToDb } = require('./db')
-
-const mongoDbCleanup = async () => {
-	await Promise.all([
-		User.deleteMany({}),
-		Post.deleteMany({}),
-		Like.deleteMany({}),
-		Follow.deleteMany({}),
-	])
-}
-
-const mongoDbConnect = async () => {
-	await connectToDb(MONGODB_URI)
-}
 
 const getMockUserData = () => {
 	const user = {
@@ -48,8 +31,6 @@ const createUser = async data => {
 }
 
 module.exports = {
-	mongoDbCleanup,
-	mongoDbConnect,
 	getMockUserData,
 	createUser,
 }

@@ -1,4 +1,3 @@
-const { User, Post, Like, Follow } = require('../models')
 const { createHash, compareHash, createToken } = require('../utils/auth')
 const HttpError = require('../utils/error')
 const redis = require('../utils/redis')

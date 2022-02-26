@@ -6,7 +6,7 @@ const redis = require('../utils/redis')
 
 const prisma = new PrismaClient()
 
-module.exports = class UserService {
+class UserService {
 	static SignUp({ username, email, password }) {
 		return prisma.user.create({
 			data: {
@@ -133,19 +133,21 @@ module.exports = class UserService {
 		if (hasMore) {
 			postIds.shift()
 		}
-		const posts = await Post.find({ _id: { $in: postIds } })
-			.select('content author createdAt')
-			.populate({ path: 'author', select: 'username' })
-			.sort({ createdAt: -1 })
-			.lean()
-		const mappedPosts = posts.map(x => {
-			x.postId = x._id
-			x.authorId = x.author._id
-			x.author = x.author.username
-			delete x._id
-			return x
+		const posts = await prisma.post.findMany({
+			where: { id: { in: postIds.map(x => Number(x)) } },
+			orderBy: { createdAt: 'desc' },
+			select: {
+				content: true,
+				author: {
+					select: {
+						username: true,
+						id: true,
+					},
+				},
+				createdAt: true,
+			},
 		})
-		return { posts: mappedPosts, cursor: hasMore ? END : null, hasMore }
+		return { posts, cursor: hasMore ? END : null, hasMore }
 	}
 
 	static async Delete(userId) {
@@ -171,3 +173,5 @@ module.exports = class UserService {
 		// TODO: clear redis
 	}
 }
+
+module.exports = UserService

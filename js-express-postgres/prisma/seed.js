@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client')
 const faker = require('faker') // eslint-disable-line node/no-unpublished-require
 
 const { createHash } = require('../src/utils/auth')
+const { addJob } = require('../src/utils/queue')
 
 const prisma = new PrismaClient()
 
@@ -79,7 +80,19 @@ async function main() {
 	console.log({ followResult })
 }
 
+const buildFeed = async () => {
+	const posts = await prisma.post.findMany({
+		select: { authorId: true, id: true },
+	})
+	posts.forEach(({ authorId, id }) => {
+		const data = { authorId: authorId, postId: id }
+		addJob('fanout', data)
+	})
+	console.log('jobs queued for building feed')
+}
+
 main()
+	.then(_ => buildFeed())
 	.catch(e => {
 		console.error(e)
 		process.exit(1) // eslint-disable-line no-process-exit

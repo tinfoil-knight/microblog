@@ -1,14 +1,14 @@
 const { PrismaClient } = require('@prisma/client')
 
 const HttpError = require('../utils/error')
-// const { addJob } = require('../utils/queue')
+const { addJob } = require('../utils/queue')
 
 const prisma = new PrismaClient()
 
-module.exports = class PostService {
+class PostService {
 	static async CreatePost({ content, authorId }) {
 		const post = await prisma.post.create({ data: { content, authorId } })
-		// addJob('fanout', { authorId, postId: post.id })
+		addJob('fanout', { authorId, postId: post.id })
 		return post.id
 	}
 
@@ -85,3 +85,5 @@ module.exports = class PostService {
 		await prisma.post.delete({ where: { id: postId } })
 	}
 }
+
+module.exports = PostService

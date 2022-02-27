@@ -1,9 +1,9 @@
 const { PrismaClient } = require('@prisma/client')
-const kue = require('kue')
+const { createQueue } = require('kue')
 
 const redis = require('./redis')
 
-const q = kue.createQueue()
+const q = createQueue()
 
 const prisma = new PrismaClient()
 

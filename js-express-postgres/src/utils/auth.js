@@ -24,7 +24,7 @@ const createHash = (string, saltRounds = 10) => {
 	return bcrypt.hashSync(string, saltRounds)
 }
 
-const compareHash = async (plaintext, hash) => {
+const compareHash = (plaintext, hash) => {
 	return bcrypt.compare(plaintext, hash)
 }
 

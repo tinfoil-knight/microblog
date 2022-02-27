@@ -28,8 +28,7 @@ class UserService {
 		if (!isPswCorrect) {
 			throw new HttpError(401, 'incorrect password')
 		}
-		const token = await createToken({ id: user.id })
-		return token
+		return createToken({ id: user.id })
 	}
 
 	static UpdateMail(userId, email) {

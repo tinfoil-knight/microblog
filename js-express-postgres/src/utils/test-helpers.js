@@ -1,14 +1,16 @@
+const { PrismaClient } = require('@prisma/client')
 const faker = require('faker') // eslint-disable-line node/no-unpublished-require
 
 const { createHash } = require('./auth')
 
+const prisma = new PrismaClient()
+
 const getMockUserData = () => {
-	const user = {
+	return {
 		username: faker.internet.userName(),
 		email: faker.internet.email(),
 		password: faker.internet.password(),
 	}
-	return user
 }
 
 /**
@@ -19,15 +21,14 @@ const getMockUserData = () => {
  * @param {Object} data.password
  * @returns {*} mongoose document
  */
-const createUser = async data => {
+const createUser = data => {
 	const { username, email, password } = data || getMockUserData()
 	const passwordHash = createHash(password)
-	const user = await User.create({
+	return prisma.user.create({
 		username,
 		email,
 		passwordHash,
 	})
-	return user
 }
 
 module.exports = {

@@ -13,8 +13,8 @@ const MAX_POSTS_PER_USER = 100
 async function main() {
 	await prisma.like.deleteMany({})
 	await prisma.post.deleteMany({})
-	await prisma.user.deleteMany({})
 	await prisma.follow.deleteMany({})
+	await prisma.user.deleteMany({})
 
 	console.log('creating users')
 	const usersData = range(NUM_USERS).map(_ => {
@@ -51,7 +51,7 @@ async function main() {
 	console.log('adding likes to posts')
 	const posts = await prisma.post.findMany({ select: { id: true } })
 	const postIds = posts.map(x => x.id)
-	const postsWithLikes = postIds
+	let postsWithLikes = postIds
 		.map(postId => {
 			const numLikes = getRandIntInclusive(0, userIds.length)
 			const idxs = getNRand(numLikes, 0, users.length - 1)
@@ -62,6 +62,7 @@ async function main() {
 			}))
 		})
 		.flat()
+	shuffleArray(postsWithLikes)
 	const likeResult = await prisma.like.createMany({ data: postsWithLikes })
 	console.log({ likeResult })
 
@@ -83,6 +84,7 @@ async function main() {
 const buildFeed = async () => {
 	const posts = await prisma.post.findMany({
 		select: { authorId: true, id: true },
+		orderBy: { createdAt: 'asc' },
 	})
 	posts.forEach(({ authorId, id }) => {
 		const data = { authorId: authorId, postId: id }

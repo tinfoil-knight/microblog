@@ -52,25 +52,31 @@ class PostService {
 		})
 	}
 
-	static async GetLikes(postId, cursor) {
-		const limit = 20
-		const post = postId
-		const prevId = cursor
-		const filter = prevId ? { post, _id: { $lt: prevId } } : { post }
-
-		const likes = await Like.find(filter)
-			.populate({ path: 'user', select: 'username -_id' })
-			.select('user')
-			.sort({ _id: 'desc' })
-			.limit(limit + 1)
-			.lean()
+	static async GetLikes(postId, prevId = null) {
+		const limit = 5
+		// NOTE: only works if id is sequential
+		const paging = prevId
+			? {
+					cursor: {
+						id: prevId,
+					},
+					skip: 1,
+			  }
+			: {}
+		const likes = await prisma.like.findMany({
+			where: { postId },
+			select: { user: { select: { username: true } }, id: true },
+			take: limit + 1,
+			orderBy: { id: 'asc' },
+			...paging,
+		})
 		const hasMore = likes.length === limit + 1
 		if (hasMore) {
 			likes.pop()
 		}
-		const lastId = likes.length && hasMore ? likes.at(-1)._id : null
+		const lastId = likes.length && hasMore ? likes.at(-1).id : null
 		const usernames = likes.map(x => x.user.username)
-		return { usernames, lastId, hasMore }
+		return { usernames, cursor: lastId, hasMore }
 	}
 
 	static async DeletePost(postId, userId) {

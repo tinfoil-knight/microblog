@@ -1,7 +1,7 @@
 const rateLimit = require('express-rate-limit')
 const morgan = require('morgan')
 
-const { isDev } = require('./config')
+const log = require('./log')
 
 morgan.token('req_body', function (req, _) {
 	if (['POST', 'PUT'].includes(req.method)) {
@@ -9,11 +9,26 @@ morgan.token('req_body', function (req, _) {
 	}
 })
 
-const logFormat = isDev
-	? ':remote-addr :method :url :status - :response-time ms :req_body'
-	: ':date[iso] :method :url :status - :response-time ms :req_body'
+const jsonFormat = (tokens, req, res) => {
+	return JSON.stringify(
+		':method :url :status :response-time :req_body'
+			.replaceAll(':', '')
+			.split(' ')
+			.reduce((a, b) => {
+				a[b] = tokens[b](req, res)
+				return a
+			}, {})
+	)
+}
 
-const requestLogger = morgan(logFormat)
+// const logFormat =
+// 	':date[iso] :method :url :status - :response-time ms :req_body'
+
+const requestLogger = morgan(jsonFormat, {
+	stream: {
+		write: data => log.http(JSON.parse(data)),
+	},
+})
 
 //
 
@@ -29,9 +44,12 @@ const errorHandler = (err, _req, res, _next) => {
 		err.status = 400
 	}
 	const errStatus = err.status || 500
-	const logMessage = errStatus >= 500 ? err : err.message
-	console.log(logMessage, err.props || '')
-	const errMessage = errStatus >= 500 ? 'internal server error' : err.message
+	log.error({
+		message: err.message,
+		details: err.props || '',
+		stack: errStatus == 500 ? err.stack : '',
+	})
+	const errMessage = errStatus == 500 ? 'internal server error' : err.message
 	const responseObj = { error: errMessage }
 	if (err.props) {
 		responseObj.details = err.props

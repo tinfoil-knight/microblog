@@ -56,7 +56,7 @@ class UserService {
 			},
 		})
 		if (!user) {
-			throw new HttpError(404)
+			throw new HttpError(404, 'user not found', { username })
 		}
 		return {
 			id: user.id,

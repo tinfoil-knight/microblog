@@ -150,7 +150,7 @@ class UserService {
 	}
 
 	static async Delete(userId) {
-		await Promise.all([
+		await prisma.$transaction([
 			prisma.follow.deleteMany({
 				where: {
 					OR: [
@@ -166,9 +166,9 @@ class UserService {
 			prisma.like.deleteMany({
 				where: { OR: [{ userId }, { post: { authorId: userId } }] },
 			}),
+			prisma.post.deleteMany({ where: { authorId: userId } }),
+			prisma.user.delete({ where: { id: userId } }),
 		])
-		await prisma.post.deleteMany({ where: { authorId: userId } })
-		await prisma.user.delete({ where: { id: userId } })
 		// TODO: clear redis
 	}
 }

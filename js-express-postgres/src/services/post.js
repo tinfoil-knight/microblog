@@ -87,8 +87,10 @@ class PostService {
 		if (userId !== post.authorId) {
 			throw new HttpError(403)
 		}
-		await prisma.like.deleteMany({ where: { postId } })
-		await prisma.post.delete({ where: { id: postId } })
+		await prisma.$transaction([
+			prisma.like.deleteMany({ where: { postId } }),
+			prisma.post.delete({ where: { id: postId } }),
+		])
 	}
 }
 

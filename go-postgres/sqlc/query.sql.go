@@ -121,6 +121,98 @@ func (q *Queries) GetPost(ctx context.Context, id int32) (GetPostRow, error) {
 	return i, err
 }
 
+const getUserForAuth = `-- name: GetUserForAuth :one
+SELECT
+    id,
+    password_hash
+FROM
+    users
+`
+
+type GetUserForAuthRow struct {
+	ID           int32  `json:"id"`
+	PasswordHash string `json:"password_hash"`
+}
+
+func (q *Queries) GetUserForAuth(ctx context.Context) (GetUserForAuthRow, error) {
+	row := q.db.QueryRow(ctx, getUserForAuth)
+	var i GetUserForAuthRow
+	err := row.Scan(&i.ID, &i.PasswordHash)
+	return i, err
+}
+
+const getUserForProfile = `-- name: GetUserForProfile :one
+WITH FOLLOWING AS (
+    SELECT
+        following_id
+    FROM
+        follows
+    WHERE
+        follower_id = $1
+)
+SELECT
+    id,
+    username,
+    created_at,
+(
+        SELECT
+            count(*)
+        FROM
+            follows f
+        WHERE
+            f.following_id = $1) AS following_count,
+(
+        SELECT
+            ARRAY_AGG(username)
+        FROM
+            users
+        WHERE
+            id IN (
+                SELECT
+                    following_id
+                FROM
+                    FOLLOWING
+                LIMIT 3)) AS followers_you_know,
+(
+        SELECT
+            count(*)
+        FROM
+            users
+        WHERE
+            id IN (
+                SELECT
+                    following_id
+                FROM
+                    FOLLOWING)) AS followers_you_know_count
+FROM
+    users
+WHERE
+    id = $1
+`
+
+type GetUserForProfileRow struct {
+	ID                    int32              `json:"id"`
+	Username              string             `json:"username"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	FollowingCount        int64              `json:"following_count"`
+	FollowersYouKnow      interface{}        `json:"followers_you_know"`
+	FollowersYouKnowCount int64              `json:"followers_you_know_count"`
+}
+
+func (q *Queries) GetUserForProfile(ctx context.Context, followingID int32) (GetUserForProfileRow, error) {
+	row := q.db.QueryRow(ctx, getUserForProfile, followingID)
+	var i GetUserForProfileRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.CreatedAt,
+		&i.FollowingCount,
+		&i.FollowersYouKnow,
+		&i.FollowersYouKnowCount,
+	)
+	return i, err
+}
+
 type InsertFollowsParams struct {
 	FollowerID  int32 `json:"follower_id"`
 	FollowingID int32 `json:"following_id"`
@@ -149,6 +241,22 @@ func (q *Queries) InsertPost(ctx context.Context, arg InsertPostParams) error {
 type InsertPostsParams struct {
 	Content  string `json:"content"`
 	AuthorID int32  `json:"author_id"`
+}
+
+const insertUser = `-- name: InsertUser :exec
+INSERT INTO users(email, username, password_hash)
+    VALUES ($1, $2, $3)
+`
+
+type InsertUserParams struct {
+	Email        string `json:"email"`
+	Username     string `json:"username"`
+	PasswordHash string `json:"password_hash"`
+}
+
+func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
+	_, err := q.db.Exec(ctx, insertUser, arg.Email, arg.Username, arg.PasswordHash)
+	return err
 }
 
 type InsertUsersParams struct {
@@ -185,5 +293,24 @@ type UnlikePostParams struct {
 
 func (q *Queries) UnlikePost(ctx context.Context, arg UnlikePostParams) error {
 	_, err := q.db.Exec(ctx, unlikePost, arg.PostID, arg.UserID)
+	return err
+}
+
+const updateUserEmail = `-- name: UpdateUserEmail :exec
+UPDATE
+    users
+SET
+    email = $2
+WHERE
+    id = $1
+`
+
+type UpdateUserEmailParams struct {
+	ID    int32  `json:"id"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
+	_, err := q.db.Exec(ctx, updateUserEmail, arg.ID, arg.Email)
 	return err
 }

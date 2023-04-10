@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"log"
 
 	fake "github.com/brianvoe/gofakeit/v6"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tinfoil-knight/go-postgres/sqlc"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/exp/maps"
@@ -17,18 +19,14 @@ import (
 const NUM_USERS uint = 100
 const MAX_POSTS_PER_USER int = 100
 
-func SeedDB(ctx context.Context, q *sqlc.Queries) {
-	// fns := []func(context.Context) error{
-	// 	q.TruncateLikes,
-	// 	q.TruncatePosts,
-	// 	q.TruncateFollows,
-	// 	q.TruncateUsers,
-	// }
+func SeedDB(ctx context.Context, q *sqlc.Queries, db *pgxpool.Pool) {
+	log.Println("dropping tables")
+	db.Exec(ctx, `DROP TABLE IF EXISTS likes, follows, posts, users CASCADE`)
 
-	// log.Println("truncating tables")
-	// for _, fn := range fns {
-	// 	panicOnErr(fn(ctx))
-	// }
+	log.Println("creating tables")
+	f, _ := os.ReadFile("schema.sql")
+	schema := string(f)
+	db.Exec(ctx, schema)
 
 	usersData := []sqlc.InsertUsersParams{}
 	for i := 0; i < int(NUM_USERS); i++ {

@@ -83,39 +83,3 @@ type InsertUsersParams struct {
 	Username     string `json:"username"`
 	PasswordHash string `json:"password_hash"`
 }
-
-const truncateFollows = `-- name: TruncateFollows :exec
-TRUNCATE TABLE follows RESTART IDENTITY CASCADE
-`
-
-func (q *Queries) TruncateFollows(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, truncateFollows)
-	return err
-}
-
-const truncateLikes = `-- name: TruncateLikes :exec
-TRUNCATE TABLE likes RESTART IDENTITY CASCADE
-`
-
-func (q *Queries) TruncateLikes(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, truncateLikes)
-	return err
-}
-
-const truncatePosts = `-- name: TruncatePosts :exec
-TRUNCATE TABLE posts RESTART IDENTITY CASCADE
-`
-
-func (q *Queries) TruncatePosts(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, truncatePosts)
-	return err
-}
-
-const truncateUsers = `-- name: TruncateUsers :exec
-TRUNCATE TABLE users RESTART IDENTITY CASCADE
-`
-
-func (q *Queries) TruncateUsers(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, truncateUsers)
-	return err
-}

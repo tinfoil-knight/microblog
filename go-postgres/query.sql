@@ -1,15 +1,3 @@
--- name: TruncateLikes :exec
-TRUNCATE TABLE likes RESTART IDENTITY CASCADE;
-
--- name: TruncatePosts :exec
-TRUNCATE TABLE posts RESTART IDENTITY CASCADE;
-
--- name: TruncateFollows :exec
-TRUNCATE TABLE follows RESTART IDENTITY CASCADE;
-
--- name: TruncateUsers :exec
-TRUNCATE TABLE users RESTART IDENTITY CASCADE;
-
 -- name: InsertUsers :copyfrom
 INSERT INTO users(email, username, password_hash)
     VALUES ($1, $2, $3);

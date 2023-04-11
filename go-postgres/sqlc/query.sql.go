@@ -183,7 +183,14 @@ SELECT
                 SELECT
                     following_id
                 FROM
-                    FOLLOWING)) AS followers_you_know_count
+                    FOLLOWING)) AS followers_you_know_count,
+(
+        SELECT
+            count(*)
+        FROM
+            posts
+        WHERE
+            author_id = $1) AS post_count
 FROM
     users
 WHERE
@@ -197,6 +204,7 @@ type GetUserForProfileRow struct {
 	FollowingCount        int64              `json:"following_count"`
 	FollowersYouKnow      interface{}        `json:"followers_you_know"`
 	FollowersYouKnowCount int64              `json:"followers_you_know_count"`
+	PostCount             int64              `json:"post_count"`
 }
 
 func (q *Queries) GetUserForProfile(ctx context.Context, followingID int32) (GetUserForProfileRow, error) {
@@ -209,6 +217,7 @@ func (q *Queries) GetUserForProfile(ctx context.Context, followingID int32) (Get
 		&i.FollowingCount,
 		&i.FollowersYouKnow,
 		&i.FollowersYouKnowCount,
+		&i.PostCount,
 	)
 	return i, err
 }

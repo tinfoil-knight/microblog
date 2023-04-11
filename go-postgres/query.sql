@@ -128,7 +128,14 @@ SELECT
                 SELECT
                     following_id
                 FROM
-                    FOLLOWING)) AS followers_you_know_count
+                    FOLLOWING)) AS followers_you_know_count,
+(
+        SELECT
+            count(*)
+        FROM
+            posts
+        WHERE
+            author_id = $1) AS post_count
 FROM
     users
 WHERE

@@ -21,6 +21,22 @@ func (q *Queries) DeletePost(ctx context.Context, id int32) error {
 	return err
 }
 
+const followUser = `-- name: FollowUser :exec
+INSERT INTO follows(follower_id, following_id)
+    VALUES ($1, $2)
+`
+
+type FollowUserParams struct {
+	FollowerID  int32 `json:"follower_id"`
+	FollowingID int32 `json:"following_id"`
+}
+
+// follower_id "follows" following_id
+func (q *Queries) FollowUser(ctx context.Context, arg FollowUserParams) error {
+	_, err := q.db.Exec(ctx, followUser, arg.FollowerID, arg.FollowingID)
+	return err
+}
+
 const getAllPostIDs = `-- name: GetAllPostIDs :many
 SELECT
     id
@@ -362,6 +378,23 @@ type LikePostParams struct {
 
 func (q *Queries) LikePost(ctx context.Context, arg LikePostParams) error {
 	_, err := q.db.Exec(ctx, likePost, arg.PostID, arg.UserID)
+	return err
+}
+
+const unfollowUser = `-- name: UnfollowUser :exec
+DELETE FROM follows
+WHERE follower_id = $1
+    AND following_id = $2
+`
+
+type UnfollowUserParams struct {
+	FollowerID  int32 `json:"follower_id"`
+	FollowingID int32 `json:"following_id"`
+}
+
+// follower_id "unfollows" following_id
+func (q *Queries) UnfollowUser(ctx context.Context, arg UnfollowUserParams) error {
+	_, err := q.db.Exec(ctx, unfollowUser, arg.FollowerID, arg.FollowingID)
 	return err
 }
 

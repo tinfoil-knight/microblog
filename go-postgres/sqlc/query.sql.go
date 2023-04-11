@@ -75,6 +75,82 @@ func (q *Queries) GetAllUserIDs(ctx context.Context) ([]int32, error) {
 	return items, nil
 }
 
+const getFollowers = `-- name: GetFollowers :many
+SELECT
+    username
+FROM
+    users
+WHERE
+    id IN (
+        SELECT
+            follower_id
+        FROM
+            follows
+        WHERE
+            following_id = $1
+        ORDER BY
+            created_at DESC)
+`
+
+// this query returns people who follow you
+func (q *Queries) GetFollowers(ctx context.Context, followingID int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, getFollowers, followingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFollowing = `-- name: GetFollowing :many
+SELECT
+    username
+FROM
+    users
+WHERE
+    id IN (
+        SELECT
+            following_id
+        FROM
+            follows
+        WHERE
+            follower_id = $1
+        ORDER BY
+            created_at DESC)
+`
+
+// this query returns people you follow
+func (q *Queries) GetFollowing(ctx context.Context, followerID int32) ([]string, error) {
+	rows, err := q.db.Query(ctx, getFollowing, followerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPost = `-- name: GetPost :one
 SELECT
     p.content,

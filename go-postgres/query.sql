@@ -141,3 +141,37 @@ FROM
 WHERE
     id = $1;
 
+-- this query returns people you follow
+-- name: GetFollowing :many
+SELECT
+    username
+FROM
+    users
+WHERE
+    id IN (
+        SELECT
+            following_id
+        FROM
+            follows
+        WHERE
+            follower_id = $1
+        ORDER BY
+            created_at DESC);
+
+-- this query returns people who follow you
+-- name: GetFollowers :many
+SELECT
+    username
+FROM
+    users
+WHERE
+    id IN (
+        SELECT
+            follower_id
+        FROM
+            follows
+        WHERE
+            following_id = $1
+        ORDER BY
+            created_at DESC);
+

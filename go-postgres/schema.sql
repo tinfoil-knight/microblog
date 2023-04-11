@@ -10,20 +10,20 @@ CREATE TABLE users(
 CREATE TABLE posts(
     id serial PRIMARY KEY,
     content varchar(400) NOT NULL,
-    author_id int REFERENCES users(id) NOT NULL,
+    author_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE likes(
-    post_id int REFERENCES posts(id) NOT NULL,
-    user_id int REFERENCES users(id) NOT NULL,
+    post_id int NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     PRIMARY KEY (post_id, user_id)
 );
 
 CREATE TABLE follows(
-    follower_id int REFERENCES users(id) NOT NULL,
-    following_id int REFERENCES users(id) NOT NULL,
+    follower_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     PRIMARY KEY (follower_id, following_id)
 );

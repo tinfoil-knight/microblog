@@ -186,3 +186,7 @@ DELETE FROM follows
 WHERE follower_id = $1
     AND following_id = $2;
 
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1;
+

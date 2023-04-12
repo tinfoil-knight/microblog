@@ -190,3 +190,23 @@ WHERE follower_id = $1
 DELETE FROM users
 WHERE id = $1;
 
+-- todo: fetch only the last l.created_at, l.user_id value
+-- name: GetPaginatedLikes :many
+SELECT
+    u.username,
+    l.created_at,
+    l.user_id
+FROM
+    likes l
+    LEFT JOIN users u ON u.id = l.user_id
+WHERE
+    post_id = $1
+    AND (l.created_at < $2
+        OR $2 IS NULL)
+    AND (l.user_id > $3
+        OR $3 IS NULL) -- tie-breaker
+ORDER BY
+    l.created_at DESC,
+    user_id
+LIMIT 20;
+

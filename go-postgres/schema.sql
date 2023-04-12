@@ -21,6 +21,8 @@ CREATE TABLE likes(
     PRIMARY KEY (post_id, user_id)
 );
 
+CREATE INDEX likes_createdat_userid_idx ON likes(created_at, user_id);
+
 CREATE TABLE follows(
     follower_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     following_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -177,6 +177,59 @@ func (q *Queries) GetFollowing(ctx context.Context, followerID int32) ([]string,
 	return items, nil
 }
 
+const getPaginatedLikes = `-- name: GetPaginatedLikes :many
+SELECT
+    u.username,
+    l.created_at,
+    l.user_id
+FROM
+    likes l
+    LEFT JOIN users u ON u.id = l.user_id
+WHERE
+    post_id = $1
+    AND (l.created_at < $2
+        OR $2 IS NULL)
+    AND (l.user_id > $3
+        OR $3 IS NULL) -- tie-breaker
+ORDER BY
+    l.created_at DESC,
+    user_id
+LIMIT 20
+`
+
+type GetPaginatedLikesParams struct {
+	PostID    int32              `json:"post_id"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UserID    int32              `json:"user_id"`
+}
+
+type GetPaginatedLikesRow struct {
+	Username  pgtype.Text        `json:"username"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UserID    int32              `json:"user_id"`
+}
+
+// todo: fetch only the last l.created_at, l.user_id value
+func (q *Queries) GetPaginatedLikes(ctx context.Context, arg GetPaginatedLikesParams) ([]GetPaginatedLikesRow, error) {
+	rows, err := q.db.Query(ctx, getPaginatedLikes, arg.PostID, arg.CreatedAt, arg.UserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaginatedLikesRow
+	for rows.Next() {
+		var i GetPaginatedLikesRow
+		if err := rows.Scan(&i.Username, &i.CreatedAt, &i.UserID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPost = `-- name: GetPost :one
 SELECT
     p.content,

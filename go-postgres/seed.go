@@ -45,7 +45,7 @@ func SeedDB(ctx context.Context, q *sqlc.Queries, db *pgxpool.Pool) {
 		fmt.Println(username, psw)
 		var created_at pgtype.Timestamptz
 		// adds variation in created_at by spreading it over the last 1000 hours
-		err := created_at.Scan(time.Now().Add(time.Hour * time.Duration(-rand.Intn(1000))))
+		err := created_at.Scan(randTime(time.Now()))
 		panicOnErr(err)
 		usersData = append(usersData, sqlc.InsertUsersParams{
 			Email:        fake.Email(),
@@ -74,7 +74,7 @@ func SeedDB(ctx context.Context, q *sqlc.Queries, db *pgxpool.Pool) {
 	postsData := []sqlc.InsertPostsParams{}
 	for _, id := range authorIDs {
 		var created_at pgtype.Timestamptz
-		created_at.Scan(time.Now().Add(time.Hour * time.Duration(-rand.Intn(100))))
+		created_at.Scan(randTime(time.Now()))
 		postsData = append(postsData, sqlc.InsertPostsParams{
 			Content:   fake.Sentence((int(id) % 40) + 1),
 			AuthorID:  id,
@@ -97,7 +97,7 @@ func SeedDB(ctx context.Context, q *sqlc.Queries, db *pgxpool.Pool) {
 
 			for _, idx := range idxs {
 				var created_at pgtype.Timestamptz
-				created_at.Scan(time.Now().Add(time.Hour * time.Duration(-rand.Intn(10))))
+				created_at.Scan(randTime(time.Now()))
 				likesData = append(likesData, sqlc.InsertLikesParams{
 					PostID:    postID,
 					UserID:    userIDs[idx],
@@ -121,7 +121,7 @@ func SeedDB(ctx context.Context, q *sqlc.Queries, db *pgxpool.Pool) {
 				followingID := userIDs[idx]
 				if followingID != followerID {
 					var created_at pgtype.Timestamptz
-					created_at.Scan(time.Now().Add(time.Hour * time.Duration(-rand.Intn(500))))
+					created_at.Scan(randTime(time.Now()))
 					followsData = append(followsData, sqlc.InsertFollowsParams{
 						FollowerID:  followerID,
 						FollowingID: followingID,
@@ -160,4 +160,11 @@ func getNRand(n int, limit int) []int {
 		}
 	}
 	return maps.Keys(m)
+}
+
+func randTime(cutoff time.Time) time.Time {
+	randDuration := time.Hour*time.Duration(1000) +
+		time.Minute*time.Duration(rand.Intn(60)) +
+		time.Second*time.Duration(rand.Intn(60))
+	return cutoff.Add(-randDuration)
 }

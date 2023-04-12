@@ -31,6 +31,7 @@ func (r iteratorForInsertFollows) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].FollowerID,
 		r.rows[0].FollowingID,
+		r.rows[0].CreatedAt,
 	}, nil
 }
 
@@ -39,7 +40,7 @@ func (r iteratorForInsertFollows) Err() error {
 }
 
 func (q *Queries) InsertFollows(ctx context.Context, arg []InsertFollowsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"follows"}, []string{"follower_id", "following_id"}, &iteratorForInsertFollows{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"follows"}, []string{"follower_id", "following_id", "created_at"}, &iteratorForInsertFollows{rows: arg})
 }
 
 // iteratorForInsertLikes implements pgx.CopyFromSource.
@@ -64,6 +65,7 @@ func (r iteratorForInsertLikes) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].PostID,
 		r.rows[0].UserID,
+		r.rows[0].CreatedAt,
 	}, nil
 }
 
@@ -72,7 +74,7 @@ func (r iteratorForInsertLikes) Err() error {
 }
 
 func (q *Queries) InsertLikes(ctx context.Context, arg []InsertLikesParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"likes"}, []string{"post_id", "user_id"}, &iteratorForInsertLikes{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"likes"}, []string{"post_id", "user_id", "created_at"}, &iteratorForInsertLikes{rows: arg})
 }
 
 // iteratorForInsertPosts implements pgx.CopyFromSource.
@@ -97,6 +99,7 @@ func (r iteratorForInsertPosts) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].Content,
 		r.rows[0].AuthorID,
+		r.rows[0].CreatedAt,
 	}, nil
 }
 
@@ -105,7 +108,7 @@ func (r iteratorForInsertPosts) Err() error {
 }
 
 func (q *Queries) InsertPosts(ctx context.Context, arg []InsertPostsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"posts"}, []string{"content", "author_id"}, &iteratorForInsertPosts{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"posts"}, []string{"content", "author_id", "created_at"}, &iteratorForInsertPosts{rows: arg})
 }
 
 // iteratorForInsertUsers implements pgx.CopyFromSource.
@@ -131,6 +134,8 @@ func (r iteratorForInsertUsers) Values() ([]interface{}, error) {
 		r.rows[0].Email,
 		r.rows[0].Username,
 		r.rows[0].PasswordHash,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
 	}, nil
 }
 
@@ -139,5 +144,5 @@ func (r iteratorForInsertUsers) Err() error {
 }
 
 func (q *Queries) InsertUsers(ctx context.Context, arg []InsertUsersParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"users"}, []string{"email", "username", "password_hash"}, &iteratorForInsertUsers{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"users"}, []string{"email", "username", "password_hash", "created_at", "updated_at"}, &iteratorForInsertUsers{rows: arg})
 }

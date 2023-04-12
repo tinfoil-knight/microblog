@@ -1,18 +1,18 @@
 -- name: InsertUsers :copyfrom
-INSERT INTO users(email, username, password_hash)
-    VALUES ($1, $2, $3);
+INSERT INTO users(email, username, password_hash, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5);
 
 -- name: InsertPosts :copyfrom
-INSERT INTO posts(content, author_id)
-    VALUES ($1, $2);
+INSERT INTO posts(content, author_id, created_at)
+    VALUES ($1, $2, $3);
 
 -- name: InsertLikes :copyfrom
-INSERT INTO likes(post_id, user_id)
-    VALUES ($1, $2);
+INSERT INTO likes(post_id, user_id, created_at)
+    VALUES ($1, $2, $3);
 
 -- name: InsertFollows :copyfrom
-INSERT INTO follows(follower_id, following_id)
-    VALUES ($1, $2);
+INSERT INTO follows(follower_id, following_id, created_at)
+    VALUES ($1, $2, $3);
 
 -- name: GetAllUserIDs :many
 SELECT

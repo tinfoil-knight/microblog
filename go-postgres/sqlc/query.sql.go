@@ -325,13 +325,15 @@ func (q *Queries) GetUserForProfile(ctx context.Context, followingID int32) (Get
 }
 
 type InsertFollowsParams struct {
-	FollowerID  int32 `json:"follower_id"`
-	FollowingID int32 `json:"following_id"`
+	FollowerID  int32              `json:"follower_id"`
+	FollowingID int32              `json:"following_id"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 type InsertLikesParams struct {
-	PostID int32 `json:"post_id"`
-	UserID int32 `json:"user_id"`
+	PostID    int32              `json:"post_id"`
+	UserID    int32              `json:"user_id"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
 const insertPost = `-- name: InsertPost :exec
@@ -350,8 +352,9 @@ func (q *Queries) InsertPost(ctx context.Context, arg InsertPostParams) error {
 }
 
 type InsertPostsParams struct {
-	Content  string `json:"content"`
-	AuthorID int32  `json:"author_id"`
+	Content   string             `json:"content"`
+	AuthorID  int32              `json:"author_id"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
 const insertUser = `-- name: InsertUser :exec
@@ -371,9 +374,11 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 }
 
 type InsertUsersParams struct {
-	Email        string `json:"email"`
-	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
+	Email        string             `json:"email"`
+	Username     string             `json:"username"`
+	PasswordHash string             `json:"password_hash"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 const likePost = `-- name: LikePost :exec

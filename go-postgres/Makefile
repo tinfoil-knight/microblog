@@ -1,7 +1,7 @@
 default:
 	@echo "Specify a command to run with make"
 
-codegen:
+gen:
 	@echo "> Generating code"
 	sqlc generate --experimental
 
@@ -13,5 +13,5 @@ build:
 	@echo "> Building source"
 	go build .
 
-.PHONY: codegen run
+.PHONY: gen run
 
